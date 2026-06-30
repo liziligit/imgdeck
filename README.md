@@ -2,6 +2,10 @@
 
 ImgDeck 是一个纯图形界面的 A4 图片排版工具，基于开源项目 `imgcom` 改造。图片导入、版式选择、预览和保存均在 GUI 中完成，不再提供命令行拼接功能。
 
+## 软件界面
+
+![ImgDeck 软件界面](assets/screenshot.png)
+
 ## 项目来源
 
 本项目基于 [makalin/imgcom](https://github.com/makalin/imgcom)
@@ -66,6 +70,7 @@ python3 test_imgdeck.py
 
 ```text
 imgdeck/
+├── assets/             # README 使用的界面截图
 ├── imgdeck.py          # GUI 与图像处理
 ├── tests/              # 核心功能测试
 ├── README.md
