@@ -6,6 +6,8 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
+.venv-gui/
 ENV/
 build/
 develop-eggs/
@@ -24,10 +26,8 @@ wheels/
 *.egg
 
 # Output files
-imgcom_result_*.jpg
-imgcom_result_*.png
-imgcom_result_*.webp
-imgcom_result_*.tiff
+imgdeck_result_*.jpg
+imgdeck_result_*.png
 output/
 results/
 
@@ -48,7 +48,3 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
-
-# Batch configs (user-specific)
-batch_config.json
-

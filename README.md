@@ -1,290 +1,79 @@
-# **imgcom** - Professional Image Combiner & Stitcher
+# ImgDeck
 
-**imgcom** is a powerful, professional-grade terminal CLI tool for macOS, Linux, and Windows designed to combine multiple photos into one. It features advanced computer vision stitching, multiple output formats, batch processing, image preprocessing, watermarking, and much more.
+ImgDeck 是一个纯图形界面的 A4 图片排版工具，基于开源项目 `imgcom` 改造。图片导入、版式选择、预览和保存均在 GUI 中完成，不再提供命令行拼接功能。
 
-## **Features**
+## 项目来源
 
-### **Core Stitching Modes**
-* **Smart Stitching:** Automatically detects overlapping fields of view, corrects perspective, handles rotation, and blends images seamlessly using feature detection.
-* **Simple Stacking:** Quickly stack images horizontally or vertically (great for screenshots, receipts, or document scans).
-* **Grid/Mosaic Mode:** Arrange multiple images in a customizable grid layout with spacing and background options.
-* **Auto-Crop:** Automatically removes black borders generated during perspective warping.
+本项目基于 [makalin/imgcom](https://github.com/makalin/imgcom)
+修改和扩展。原项目由 Mehmet T. AKALIN 开发，本版本的后续修改
+和维护由“你的姓名或组织名称”完成。
 
-### **Professional Tools**
-* **Multiple Output Formats:** Support for JPG, PNG, WebP, and TIFF with adjustable quality settings.
-* **Image Preprocessing:** Resize, rotate, adjust brightness/contrast, and apply filters before combining.
-* **Batch Processing:** Process multiple image sets automatically with JSON configuration.
-* **Watermarking:** Add text or image watermarks with customizable position and opacity.
-* **EXIF Preservation:** Preserve image metadata when using Pillow (optional).
-* **Image Statistics:** Display detailed information about images (dimensions, color stats, etc.).
-* **Advanced Cropping:** Custom crop coordinates and automatic border removal.
-* **Verbose Mode:** Detailed logging and progress indicators for debugging.
-* **macOS Integration:** Automatically opens the resulting image in Preview upon completion.
+## 功能
 
-## **Installation**
+- 1×1、2×1、1×2、3×1、1×3、2×2、3×2、3×3 共 8 种 A4 版式
+- 支持导入、排序和移除 1–9 张图片
+- 图片保持原始长宽比并完整显示，未填充区域使用白色背景
+- 支持每英寸点数和每厘米点数两种分辨率单位
+- 实时显示输出像素尺寸和预计文件大小
+- 支持 PNG、JPG 保存，默认 PNG
+- 调整分辨率时保留当前预览，重新预览后应用新尺寸
 
-### **Prerequisites**
+## 环境与启动
 
-You need Python 3.6+ installed. Install the required dependencies:
+需要 Python 3.9 或更高版本。建议在 Conda 环境中安装依赖：
 
 ```bash
-pip install opencv-python numpy
+python3 -m pip install -r requirements.txt
+python3 imgdeck.py
 ```
 
-For advanced features (EXIF preservation, enhanced watermarking):
-```bash
-pip install Pillow
-```
+程序启动后，所有图片处理均在图形界面内完成，无需输入任何拼接命令。
 
-### **Setup**
+## 运行测试
 
-Clone the repository and make the script executable:
+`tests/` 目录存放项目的核心功能回归测试，用于验证 A4 输出尺寸、图片排版、空白区域填充、图片数量限制以及 PNG/JPG 保存等功能。修改图像处理逻辑后，建议运行测试，确认现有功能没有受到影响。
 
-```bash
-git clone https://github.com/makalin/imgcom.git
-cd imgcom
-chmod +x imgcom.py
-```
-
-Or install globally:
-```bash
-sudo cp imgcom.py /usr/local/bin/imgcom
-sudo chmod +x /usr/local/bin/imgcom
-```
-
-## **Usage**
-
-### **Smart Mode (Default)**
-
-Best for panoramas or scanning large documents in parts. The tool analyzes features and stitches them together.
+先安装项目依赖，然后在项目根目录（即包含 `imgdeck.py` 的目录）执行：
 
 ```bash
-./imgcom.py part1.jpg part2.jpg part3.jpg
+python3 -m pip install -r requirements.txt
+python3 -m unittest discover -s tests -v
 ```
 
-### **Horizontal Stack**
-
-Combine images side-by-side without feature detection.
+测试文件会自动定位项目根目录，因此也可以在项目根目录直接运行：
 
 ```bash
-./imgcom.py left.png right.png -m horizontal -o combined.png
+python3 tests/test_imgdeck.py
 ```
 
-### **Vertical Stack**
-
-Combine images top-to-bottom.
+或者进入 `tests` 目录后运行：
 
 ```bash
-./imgcom.py top.jpg bottom.jpg -m vertical
+cd tests
+python3 test_imgdeck.py
 ```
 
-### **Grid Layout**
+如果系统中安装了多套 Python，请始终使用同一个解释器安装依赖和运行测试。采用 `python3 -m pip`，可以避免 `pip` 与 `python3` 指向不同环境。
 
-Arrange images in a grid (e.g., 3 columns with 10px spacing):
+## 使用方法
 
-```bash
-./imgcom.py *.jpg -m grid --grid-cols 3 --grid-spacing 10
+1. 点击“添加图片”导入图片，并用“上移”“下移”调整顺序。
+2. 选择 A4 版式；图片按编号顺序填入，超出容量的图片不显示。
+3. 设置分辨率与单位，点击“预览”。
+4. 选择 PNG 或 JPG，点击“保存图片”。
+
+## 项目结构
+
+```text
+imgdeck/
+├── imgdeck.py          # GUI 与图像处理
+├── tests/              # 核心功能测试
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+└── LICENSE
 ```
 
-### **With Preprocessing**
+## 开源说明
 
-Resize, adjust brightness/contrast, and apply filters before combining:
-
-```bash
-./imgcom.py img1.jpg img2.jpg --resize 1920 1080 --brightness 10 --contrast 5
-```
-
-### **Add Watermark**
-
-Add a text watermark:
-
-```bash
-./imgcom.py img1.jpg img2.jpg --watermark "© 2024" --watermark-pos top-right
-```
-
-Add an image watermark:
-
-```bash
-./imgcom.py img1.jpg img2.jpg --watermark-img logo.png --watermark-opacity 0.7
-```
-
-### **Batch Processing**
-
-Process multiple image sets using a JSON configuration file:
-
-```bash
-./imgcom.py --batch batch_config.json --batch-dir output
-```
-
-Example `batch_config.json`:
-```json
-{
-  "mode": "smart",
-  "quality": 95,
-  "grid_cols": 3,
-  "grid_spacing": 5,
-  "sets": [
-    ["img1.jpg", "img2.jpg", "img3.jpg"],
-    ["img4.jpg", "img5.jpg"],
-    ["img6.jpg", "img7.jpg", "img8.jpg", "img9.jpg"]
-  ]
-}
-```
-
-### **Image Information**
-
-Display detailed information about images:
-
-```bash
-./imgcom.py img1.jpg img2.jpg --info
-```
-
-### **Custom Output Format & Quality**
-
-Save as PNG with custom quality:
-
-```bash
-./imgcom.py img1.jpg img2.jpg --format png --quality 100 -o result.png
-```
-
-## **Options**
-
-### **Input/Output**
-| Flag | Description |
-| :---- | :---- |
-| `-o, --output` | Specify the output filename. Defaults to `imgcom_result_{timestamp}.jpg`. |
-| `--format` | Output format: `jpg`, `png`, `webp`, or `tiff`. Auto-detected from filename if not specified. |
-| `--quality` | Output quality 1-100 (default: 95). Higher values = better quality, larger files. |
-
-### **Modes**
-| Flag | Description |
-| :---- | :---- |
-| `-m, --mode` | Combination mode: `smart` (default), `horizontal`, `vertical`, or `grid`. |
-
-### **Grid Options**
-| Flag | Description |
-| :---- | :---- |
-| `--grid-cols` | Number of columns for grid mode (default: 2). |
-| `--grid-spacing` | Spacing between images in pixels (default: 0). |
-| `--grid-bg R G B` | Background color RGB values (default: 0 0 0). |
-
-### **Preprocessing**
-| Flag | Description |
-| :---- | :---- |
-| `--resize WIDTH HEIGHT` | Resize all images before processing. |
-| `--rotate DEGREES` | Rotate all images by specified degrees. |
-| `--brightness VALUE` | Adjust brightness (-100 to 100). |
-| `--contrast VALUE` | Adjust contrast (-100 to 100). |
-| `--filter TYPE` | Apply filter: `blur`, `sharpen`, or `edge`. |
-
-### **Cropping**
-| Flag | Description |
-| :---- | :---- |
-| `--no-crop` | Skip auto-cropping black borders in smart mode. |
-| `--crop X Y W H` | Custom crop after processing (x, y, width, height). |
-
-### **Watermarking**
-| Flag | Description |
-| :---- | :---- |
-| `--watermark TEXT` | Add text watermark. |
-| `--watermark-img PATH` | Add image watermark from file. |
-| `--watermark-pos POS` | Watermark position: `top-left`, `top-right`, `bottom-left`, `bottom-right` (default: `bottom-right`). |
-| `--watermark-opacity VALUE` | Watermark opacity 0.0-1.0 (default: 0.5). |
-| `--watermark-scale VALUE` | Image watermark scale factor (default: 0.1). |
-
-### **Batch Processing**
-| Flag | Description |
-| :---- | :---- |
-| `--batch FILE` | JSON file with batch processing configuration. |
-| `--batch-dir DIR` | Output directory for batch processing (default: `output`). |
-
-### **Utilities**
-| Flag | Description |
-| :---- | :---- |
-| `--info` | Display detailed image information. |
-| `--preserve-exif` | Preserve EXIF data (requires Pillow). |
-| `-v, --verbose` | Verbose output with detailed logging. |
-| `--no-preview` | Do not open result in Preview (macOS). |
-
-## **Examples**
-
-### **Create a Panorama**
-```bash
-./imgcom.py photo1.jpg photo2.jpg photo3.jpg -o panorama.jpg
-```
-
-### **Combine Screenshots Horizontally**
-```bash
-./imgcom.py screen1.png screen2.png screen3.png -m horizontal -o combined.png
-```
-
-### **Create a Photo Grid**
-```bash
-./imgcom.py photo*.jpg -m grid --grid-cols 4 --grid-spacing 5 --grid-bg 255 255 255 -o grid.jpg
-```
-
-### **Process with Enhancements**
-```bash
-./imgcom.py img1.jpg img2.jpg \
-  --resize 1920 1080 \
-  --brightness 15 \
-  --contrast 10 \
-  --watermark "My Photography" \
-  --watermark-pos bottom-right \
-  --format png \
-  --quality 100 \
-  -o enhanced.png
-```
-
-### **Batch Process Multiple Sets**
-```bash
-# Create batch_config.json with your image sets
-./imgcom.py --batch batch_config.json --batch-dir results -v
-```
-
-## **Advanced Usage**
-
-### **Glob Patterns**
-Use wildcards to select multiple images:
-
-```bash
-./imgcom.py images/*.jpg -m grid --grid-cols 3
-```
-
-### **Verbose Mode**
-Get detailed information about the processing:
-
-```bash
-./imgcom.py img1.jpg img2.jpg -v
-```
-
-### **Custom Crop**
-After stitching, crop to specific coordinates:
-
-```bash
-./imgcom.py img1.jpg img2.jpg --crop 100 100 800 600 -o cropped.jpg
-```
-
-## **Tips**
-
-* **Smart Mode:** Ensure images have at least 30% visual overlap for best results.
-* **Quality Settings:** Use quality 95-100 for photos, 80-90 for web images, 60-80 for thumbnails.
-* **Grid Mode:** Use `--grid-spacing` to add visual separation between images.
-* **Batch Processing:** Perfect for processing multiple panoramas or image sets automatically.
-* **Preprocessing:** Apply filters and adjustments before combining for consistent results.
-
-## **Requirements**
-
-* Python 3.6+
-* OpenCV (`opencv-python`)
-* NumPy
-* Pillow (optional, for EXIF preservation and advanced features)
-
-## **Author**
-
-**Mehmet T. AKALIN** *Digital Vision*  
-[Website](https://dv.com.tr) | [LinkedIn](https://www.linkedin.com/in/makalin/) | [X (Twitter)](https://x.com/makalin)
-
-## **License**
-
-This project is licensed under the MIT License.
+本项目基于 Mehmet T. AKALIN 的开源项目 `imgcom` 修改，继续采用 MIT License。
