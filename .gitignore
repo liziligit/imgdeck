@@ -1,29 +1,7 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-.venv/
-.venv-gui/
-ENV/
+# Swift / Xcode build outputs
 build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+dist-swift/*
+!dist-swift/README.md
 
 # Output files
 imgdeck_result_*.jpg
@@ -31,20 +9,14 @@ imgdeck_result_*.png
 output/
 results/
 
-# Build artifacts
-build/
-dist/
-*.egg-info/
-.eggs/
-*.egg
-
 # IDE
 .vscode/
 .idea/
+*.xcuserstate
+xcuserdata/
 *.swp
 *.swo
 *~
 
 # OS
 .DS_Store
-Thumbs.db
