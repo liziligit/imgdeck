@@ -1,7 +1,5 @@
 # Swift / Xcode build outputs
 build/
-dist-swift/*
-!dist-swift/README.md
 
 # Output files
 imgdeck_result_*.jpg
