@@ -32,4 +32,4 @@ title: ImgDeck 技术支持
 
 ## 联系支持
 
-请通过 [GitHub Issues](https://github.com/liziligit/imgdeck/issues) 描述问题、macOS 版本和复现步骤。请勿上传包含隐私信息的图片。
+请通过 [GitHub Issues](https://github.com/liziligit/imgdeck/issues) 描述问题、macOS 版本和复现步骤，或发送电子邮件至 [lizililux@gmail.com](mailto:lizililux@gmail.com)。请勿上传包含隐私信息的图片。

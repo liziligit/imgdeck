@@ -40,4 +40,6 @@ ImgDeck 使用 macOS App Sandbox，只能读取用户通过系统文件窗口主
 
 https://github.com/liziligit/imgdeck/issues
 
+联系邮箱：lizililux@gmail.com
+
 请不要在公开问题中上传包含隐私信息的图片。

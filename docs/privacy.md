@@ -37,4 +37,4 @@ ImgDeck 的核心功能不需要网络连接。当前版本不会通过网络发
 
 ## 联系方式
 
-如有疑问，请通过 [GitHub Issues](https://github.com/liziligit/imgdeck/issues) 联系开发者。
+如有疑问，请通过 [GitHub Issues](https://github.com/liziligit/imgdeck/issues) 联系开发者，或发送电子邮件至 [lizililux@gmail.com](mailto:lizililux@gmail.com)。

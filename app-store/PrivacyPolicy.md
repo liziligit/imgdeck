@@ -37,3 +37,5 @@ ImgDeck 的核心功能不需要网络连接。当前版本不会通过网络发
 如果对本隐私政策有疑问，请通过以下页面联系开发者：
 
 https://github.com/liziligit/imgdeck/issues
+
+也可以发送电子邮件至：lizililux@gmail.com

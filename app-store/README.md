@@ -12,7 +12,7 @@
 
 ## 提交前待办
 
-- [ ] 将文档中的 `【待填写】` 全部替换为真实信息。
+- [x] 已填写开发者姓名、审核联系方式和目标售价。
 - [ ] 确认 App Store Connect 中的 Bundle ID 为 `com.liziligit.imgdeck`。
 - [ ] 确认版本号为 `1.0.0`，构建号为 `1`。
 - [ ] 在 GitHub 仓库设置中启用 GitHub Pages，发布 `docs/` 目录。
