@@ -14,7 +14,7 @@ enum PageRenderer {
         let cellHeight = height / layout.rows
         let images = try imageURLs.prefix(layout.capacity).map { url in
             guard let image = loadImage(at: url, maximumDimension: max(cellWidth, cellHeight)) else {
-                throw ImgDeckError.imageReadFailed("无法读取图片：\(url.lastPathComponent)")
+                throw ImgDeckError.imageReadFailed(url.lastPathComponent)
             }
             return image
         }

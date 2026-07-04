@@ -13,9 +13,17 @@ final class ImageDeckViewModel: ObservableObject {
     @Published var previewImage: NSImage?
     @Published var renderedImage: CGImage?
     @Published var renderedSize: (width: Int, height: Int)?
-    @Published var status = "请选择图片和版式"
+    @Published var status = ""
     @Published var alert: AlertMessage?
     @Published var isRendering = false
+
+    private var language: AppLanguage = .simplifiedChinese
+    private var statusState = StatusState.initial
+    private var strings: AppStrings { AppStrings(language: language) }
+
+    init() {
+        updateStatus()
+    }
 
     struct AlertMessage: Identifiable {
         let id = UUID()
@@ -24,8 +32,8 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     var selectedPath: String {
-        guard let selectedItem else { return "所选图片：尚未选择" }
-        return "所选图片：\(selectedItem.url.path)"
+        guard let selectedItem else { return strings.noSelection }
+        return strings.selectedPath(selectedItem.url.path)
     }
 
     var outputHint: String {
@@ -38,9 +46,9 @@ final class ImageDeckViewModel: ObservableObject {
             } else {
                 estimatedBytes = Double(size.width * size.height) * (outputFormat == .png ? 0.0822 : 0.14)
             }
-            return "输出约 \(size.width) × \(size.height) 像素（\(formatFileSize(estimatedBytes))）"
+            return strings.outputHint(width: size.width, height: size.height, fileSize: formatFileSize(estimatedBytes))
         } catch {
-            return error.localizedDescription
+            return strings.errorMessage(error)
         }
     }
 
@@ -57,15 +65,20 @@ final class ImageDeckViewModel: ObservableObject {
     var canRemove: Bool { selectedIndex != nil }
     var canSave: Bool { renderedImage != nil }
 
+    func setLanguage(_ language: AppLanguage) {
+        self.language = language
+        updateStatus()
+    }
+
     func chooseImages() {
         let remaining = 9 - items.count
         guard remaining > 0 else {
-            alert = .init(title: "数量已满", message: "最多只能选择 9 张图片。")
+            alert = .init(title: strings.maximumReachedTitle, message: strings.maximumReachedMessage)
             return
         }
 
         let panel = NSOpenPanel()
-        panel.title = "选择要拼接的图片"
+        panel.title = strings.chooseImagesPanelTitle
         panel.allowedContentTypes = [.image]
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
@@ -74,7 +87,7 @@ final class ImageDeckViewModel: ObservableObject {
         var urls = panel.urls
         if urls.count > remaining {
             urls = Array(urls.prefix(remaining))
-            alert = .init(title: "图片过多", message: "最多还能添加 \(remaining) 张图片。")
+            alert = .init(title: strings.tooManyImagesTitle, message: strings.remainingImagesMessage(remaining))
         }
         let newItems = urls.map { ImageItem(url: $0) }
         items.append(contentsOf: newItems)
@@ -121,12 +134,13 @@ final class ImageDeckViewModel: ObservableObject {
     func resolutionDidChange() {
         guard let renderedSize, let size = try? outputSize(),
               renderedSize.width != size.width || renderedSize.height != size.height else { return }
-        status = "分辨率已调整；当前预览保持不变，点击“预览”后应用新尺寸。"
+        statusState = .resolutionChanged
+        updateStatus()
     }
 
     func renderPreview() {
         guard !items.isEmpty else {
-            alert = .init(title: "尚未选择图片", message: "请至少添加 1 张图片。")
+            alert = .init(title: strings.noImagesTitle, message: strings.noImagesMessage)
             return
         }
 
@@ -147,16 +161,17 @@ final class ImageDeckViewModel: ObservableObject {
             let shown = min(items.count, selectedLayout.capacity)
             let blanks = selectedLayout.capacity - shown
             let hidden = max(0, items.count - selectedLayout.capacity)
-            status = "A4 预览 \(size.width) × \(size.height)：显示 \(shown) 张，空白 \(blanks) 个，未显示 \(hidden) 张"
+            statusState = .preview(width: size.width, height: size.height, shown: shown, blanks: blanks, hidden: hidden)
+            updateStatus()
         } catch {
-            alert = .init(title: "拼接失败", message: error.localizedDescription)
+            alert = .init(title: strings.renderFailedTitle, message: strings.errorMessage(error))
         }
     }
 
     func saveResult() {
         guard let renderedImage else { return }
         let panel = NSSavePanel()
-        panel.title = "保存 A4 拼接图片"
+        panel.title = strings.savePanelTitle
         panel.allowedContentTypes = outputFormat == .png ? [.png] : [.jpeg]
         panel.nameFieldStringValue = "imgdeck_result.\(outputFormat.fileExtension)"
         panel.canCreateDirectories = true
@@ -170,10 +185,11 @@ final class ImageDeckViewModel: ObservableObject {
         do {
             let data = try PageRenderer.encodedData(for: renderedImage, format: outputFormat)
             try data.write(to: url, options: .atomic)
-            status = "已保存到：\(url.path)"
-            alert = .init(title: "保存成功", message: "A4 拼接图片已保存。")
+            statusState = .saved(url.path)
+            updateStatus()
+            alert = .init(title: strings.saveSuccessTitle, message: strings.saveSuccessMessage)
         } catch {
-            alert = .init(title: "保存失败", message: error.localizedDescription)
+            alert = .init(title: strings.saveFailedTitle, message: strings.errorMessage(error))
         }
     }
 
@@ -189,7 +205,7 @@ final class ImageDeckViewModel: ObservableObject {
 
     private func outputSize() throws -> (width: Int, height: Int) {
         guard let resolution = Double(resolutionText) else {
-            throw ImgDeckError.invalidResolution("请输入有效的分辨率数值。")
+            throw ImgDeckError.invalidResolutionNumber
         }
         return try A4Size.pixels(resolution: resolution, unit: resolutionUnit)
     }
@@ -201,7 +217,23 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     private func refreshStatus() {
-        status = "已选择 \(items.count) 张图片；当前 \(selectedLayout.label) 版式可放 \(selectedLayout.capacity) 张"
+        statusState = items.isEmpty ? .initial : .selection
+        updateStatus()
+    }
+
+    private func updateStatus() {
+        switch statusState {
+        case .initial:
+            status = strings.initialStatus
+        case .selection:
+            status = strings.selectionStatus(count: items.count, layout: selectedLayout.label, capacity: selectedLayout.capacity)
+        case .resolutionChanged:
+            status = strings.resolutionChanged
+        case .preview(let width, let height, let shown, let blanks, let hidden):
+            status = strings.previewStatus(width: width, height: height, shown: shown, blanks: blanks, hidden: hidden)
+        case .saved(let path):
+            status = strings.savedPath(path)
+        }
     }
 
     private func formatFileSize(_ bytes: Double) -> String {
@@ -209,5 +241,13 @@ final class ImageDeckViewModel: ObservableObject {
             return String(format: "%.1f KB", bytes / 1024)
         }
         return String(format: "%.1f MB", bytes / (1024 * 1024))
+    }
+
+    private enum StatusState {
+        case initial
+        case selection
+        case resolutionChanged
+        case preview(width: Int, height: Int, shown: Int, blanks: Int, hidden: Int)
+        case saved(String)
     }
 }

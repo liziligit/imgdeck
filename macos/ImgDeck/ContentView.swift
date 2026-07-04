@@ -2,13 +2,16 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = ImageDeckViewModel()
+    @AppStorage(AppLanguage.storageKey) private var language: AppLanguage = .simplifiedChinese
+
+    private var strings: AppStrings { AppStrings(language: language) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("ImgDeck A4 图片拼接")
+                Text(strings.appTitle)
                     .font(.system(size: 26, weight: .bold))
-                Text("选择 1–9 张图片和版式，图片按列表顺序填入，未使用的位置保留白色。")
+                Text(strings.appSubtitle)
                     .foregroundStyle(.secondary)
             }
 
@@ -26,13 +29,17 @@ struct ContentView: View {
             Alert(
                 title: Text(alert.title),
                 message: Text(alert.message),
-                dismissButton: .default(Text("好"))
+                dismissButton: .default(Text(strings.ok))
             )
+        }
+        .onAppear { viewModel.setLanguage(language) }
+        .onChange(of: language) { newLanguage in
+            viewModel.setLanguage(newLanguage)
         }
     }
 
     private var controls: some View {
-        GroupBox("图片与版式") {
+        GroupBox(strings.imagesAndLayout) {
             VStack(spacing: 10) {
                 List(selection: $viewModel.selectedID) {
                     ForEach(Array(viewModel.items.enumerated()), id: \.element.id) { index, item in
@@ -43,36 +50,37 @@ struct ContentView: View {
                     }
                 }
                 .frame(minHeight: 225, maxHeight: .infinity)
-                .accessibilityLabel("已选图片列表")
+                .accessibilityLabel(strings.selectedImages)
 
                 HStack(spacing: 8) {
-                    Button("添加图片", systemImage: "photo.badge.plus", action: viewModel.chooseImages)
+                    Button(strings.addImages, systemImage: "photo.badge.plus", action: viewModel.chooseImages)
                         .frame(maxWidth: .infinity)
-                    Button("移除", systemImage: "minus.circle", action: viewModel.removeSelected)
+                    Button(strings.remove, systemImage: "minus.circle", action: viewModel.removeSelected)
                         .frame(maxWidth: .infinity)
                         .disabled(!viewModel.canRemove)
                 }
 
                 HStack(spacing: 8) {
-                    Button("上移", systemImage: "arrow.up", action: { viewModel.moveSelected(by: -1) })
+                    Button(strings.moveUp, systemImage: "arrow.up", action: { viewModel.moveSelected(by: -1) })
                         .frame(maxWidth: .infinity)
                         .disabled(!viewModel.canMoveUp)
-                    Button("下移", systemImage: "arrow.down", action: { viewModel.moveSelected(by: 1) })
+                    Button(strings.moveDown, systemImage: "arrow.down", action: { viewModel.moveSelected(by: 1) })
                         .frame(maxWidth: .infinity)
                         .disabled(!viewModel.canMoveDown)
-                    Button("清空", systemImage: "trash", action: viewModel.clearImages)
+                    Button(strings.clear, systemImage: "trash", action: viewModel.clearImages)
                         .frame(maxWidth: .infinity)
                         .disabled(viewModel.items.isEmpty)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("版式（行 × 列）")
+                    Text(strings.layout)
                         .font(.headline)
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
                         ForEach(LayoutOption.all) { layout in
                             LayoutButton(
                                 layout: layout,
                                 isSelected: layout == viewModel.selectedLayout,
+                                accessibilitySuffix: strings.layoutAccessibilitySuffix,
                                 action: { viewModel.selectLayout(layout) }
                             )
                         }
@@ -81,14 +89,14 @@ struct ContentView: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
-                        Text("分辨率：")
+                        Text(strings.resolution)
                         TextField("72", text: $viewModel.resolutionText)
                             .frame(width: 64)
                             .textFieldStyle(.roundedBorder)
                             .onChange(of: viewModel.resolutionText) { _ in viewModel.resolutionDidChange() }
-                        Picker("单位", selection: $viewModel.resolutionUnit) {
+                        Picker(strings.unit, selection: $viewModel.resolutionUnit) {
                             ForEach(ResolutionUnit.allCases) { unit in
-                                Text(unit.rawValue).tag(unit)
+                                Text(strings.unitName(unit)).tag(unit)
                             }
                         }
                         .labelsHidden()
@@ -105,16 +113,16 @@ struct ContentView: View {
                         if viewModel.isRendering {
                             ProgressView().controlSize(.small)
                         } else {
-                            Label("预览", systemImage: "eye")
+                            Label(strings.preview, systemImage: "eye")
                         }
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(viewModel.isRendering)
 
-                    Button("保存图片", systemImage: "square.and.arrow.down", action: viewModel.saveResult)
+                    Button(strings.saveImage, systemImage: "square.and.arrow.down", action: viewModel.saveResult)
                         .disabled(!viewModel.canSave)
 
-                    Picker("格式", selection: $viewModel.outputFormat) {
+                    Picker(strings.format, selection: $viewModel.outputFormat) {
                         ForEach(OutputFormat.allCases) { format in
                             Text(format.rawValue).tag(format)
                         }
@@ -127,7 +135,7 @@ struct ContentView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 34, alignment: .topLeading)
-                    .accessibilityLabel("状态：\(viewModel.status)")
+                    .accessibilityLabel("\(strings.status): \(viewModel.status)")
             }
             .padding(6)
             .frame(maxHeight: .infinity, alignment: .top)
@@ -136,7 +144,7 @@ struct ContentView: View {
     }
 
     private var previewPanel: some View {
-        GroupBox("A4 预览（210 × 297 mm）") {
+        GroupBox(strings.a4Preview) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(viewModel.selectedPath)
                     .lineLimit(2)
@@ -145,7 +153,8 @@ struct ContentView: View {
 
                 A4Preview(
                     image: viewModel.previewImage,
-                    layout: viewModel.selectedLayout
+                    layout: viewModel.selectedLayout,
+                    strings: strings
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -157,6 +166,7 @@ struct ContentView: View {
 private struct LayoutButton: View {
     let layout: LayoutOption
     let isSelected: Bool
+    let accessibilitySuffix: String
     let action: () -> Void
 
     var body: some View {
@@ -177,7 +187,7 @@ private struct LayoutButton: View {
                 .stroke(isSelected ? Color.accentColor : Color(nsColor: .separatorColor), lineWidth: isSelected ? 2 : 1)
         )
         .clipShape(RoundedRectangle(cornerRadius: 6))
-        .accessibilityLabel("\(layout.label) 版式")
+        .accessibilityLabel("\(layout.label) \(accessibilitySuffix)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
@@ -213,6 +223,7 @@ private struct LayoutGlyph: View {
 private struct A4Preview: View {
     let image: NSImage?
     let layout: LayoutOption
+    let strings: AppStrings
 
     var body: some View {
         GeometryReader { geometry in
@@ -235,7 +246,7 @@ private struct A4Preview: View {
                 .shadow(color: .black.opacity(0.22), radius: 8, y: 3)
             }
         }
-        .accessibilityLabel(image == nil ? "空白 A4 版式预览" : "A4 拼接结果预览")
+        .accessibilityLabel(image == nil ? strings.blankPreview : strings.resultPreview)
     }
 
     private func fittedPageSize(in available: CGSize) -> CGSize {

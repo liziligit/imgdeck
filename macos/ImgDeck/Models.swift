@@ -21,12 +21,11 @@ struct LayoutOption: Identifiable, Hashable {
 }
 
 enum ResolutionUnit: String, CaseIterable, Identifiable {
-    case dpi = "每英寸点数"
-    case dpcm = "每厘米点数"
+    case dpi
+    case dpcm
 
     var id: Self { self }
     var maximum: Double { self == .dpi ? 600 : 240 }
-    var errorLabel: String { self == .dpi ? "DPI" : rawValue }
 }
 
 enum OutputFormat: String, CaseIterable, Identifiable {
@@ -54,9 +53,7 @@ struct ImageItem: Identifiable, Equatable {
 enum A4Size {
     static func pixels(resolution: Double, unit: ResolutionUnit) throws -> (width: Int, height: Int) {
         guard resolution >= 1, resolution <= unit.maximum else {
-            throw ImgDeckError.invalidResolution(
-                "\(unit.errorLabel) 分辨率应在 1–\(Int(unit.maximum)) 之间。"
-            )
+            throw ImgDeckError.resolutionOutOfRange(unit, Int(unit.maximum))
         }
 
         if unit == .dpi {
@@ -67,19 +64,13 @@ enum A4Size {
 }
 
 enum ImgDeckError: LocalizedError {
-    case invalidResolution(String)
+    case invalidResolutionNumber
+    case resolutionOutOfRange(ResolutionUnit, Int)
     case imageReadFailed(String)
     case contextCreationFailed
     case exportFailed
 
     var errorDescription: String? {
-        switch self {
-        case .invalidResolution(let message), .imageReadFailed(let message):
-            return message
-        case .contextCreationFailed:
-            return "无法创建 A4 图像画布。"
-        case .exportFailed:
-            return "无法保存图片，请检查文件名和保存位置。"
-        }
+        AppStrings(language: .simplifiedChinese).errorMessage(self)
     }
 }

@@ -15,6 +15,8 @@
 		100000000000000000000006 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000006 /* Assets.xcassets */; };
 		100000000000000000000007 /* PageRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200000000000000000000007 /* PageRendererTests.swift */; };
 		100000000000000000000008 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000A /* XCTest.framework */; };
+		100000000000000000000009 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000B /* Localization.swift */; };
+		10000000000000000000000A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20000000000000000000000C /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,6 +40,8 @@
 		200000000000000000000008 /* ImgDeck.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImgDeck.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		200000000000000000000009 /* ImgDeckTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ImgDeckTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		20000000000000000000000A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+		20000000000000000000000B /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		20000000000000000000000C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +81,8 @@
 				200000000000000000000003 /* ImageDeckViewModel.swift */,
 				200000000000000000000004 /* PageRenderer.swift */,
 				200000000000000000000005 /* Models.swift */,
+				20000000000000000000000B /* Localization.swift */,
+				20000000000000000000000C /* SettingsView.swift */,
 				200000000000000000000006 /* Assets.xcassets */,
 			);
 			path = ImgDeck;
@@ -170,6 +176,7 @@
 				en,
 				Base,
 				zh_Hans,
+				zh_Hant,
 			);
 			mainGroup = 500000000000000000000001;
 			preferredProjectObjectVersion = 77;
@@ -204,6 +211,8 @@
 				100000000000000000000003 /* ImageDeckViewModel.swift in Sources */,
 				100000000000000000000004 /* PageRenderer.swift in Sources */,
 				100000000000000000000005 /* Models.swift in Sources */,
+				100000000000000000000009 /* Localization.swift in Sources */,
+				10000000000000000000000A /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,7 +276,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = J4XU386877;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -284,7 +293,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = ImgDeck;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.liziligit.imgdeck;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -299,7 +308,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = J4XU386877;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -316,7 +325,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = ImgDeck;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
-				MARKETING_VERSION = 1.0.0;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.liziligit.imgdeck;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -47,6 +47,19 @@ final class PageRendererTests: XCTestCase {
         XCTAssertGreaterThan(try PageRenderer.encodedData(for: image, format: .jpeg).count, 0)
     }
 
+    func testInterfaceStringsSupportAllLanguages() {
+        XCTAssertEqual(AppStrings(language: .simplifiedChinese).settingsTitle, "设置")
+        XCTAssertEqual(AppStrings(language: .traditionalChinese).settingsTitle, "設定")
+        XCTAssertEqual(AppStrings(language: .english).settingsTitle, "Settings")
+        XCTAssertEqual(AppStrings(language: .english).unitName(.dpi), "Dots per inch")
+    }
+
+    func testErrorsFollowSelectedLanguage() {
+        let error = ImgDeckError.imageReadFailed("sample.png")
+        XCTAssertEqual(AppStrings(language: .traditionalChinese).errorMessage(error), "無法讀取圖片：sample.png")
+        XCTAssertEqual(AppStrings(language: .english).errorMessage(error), "Unable to read image: sample.png")
+    }
+
     private func makeCGImage(width: Int, height: Int, gray: UInt8) throws -> CGImage {
         guard let context = CGContext(
             data: nil,
