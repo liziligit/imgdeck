@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 final class ImageDeckViewModel: ObservableObject {
     @Published var slots: [ImageItem?] = Array(repeating: nil, count: 9)
     @Published var selectedID: ImageItem.ID?
-    @Published var selectedLayout = LayoutOption.all[0]
+    @Published var selectedLayout = LayoutOption.defaultLayout
     @Published var resolutionText = "72"
     @Published var resolutionUnit = ResolutionUnit.dpi
     @Published var outputFormat = OutputFormat.png

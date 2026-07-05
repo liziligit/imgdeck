@@ -107,15 +107,28 @@ final class PageRendererTests: XCTestCase {
         XCTAssertEqual(AppStrings(language: .simplifiedChinese).settingsTitle, "设置")
         XCTAssertEqual(AppStrings(language: .traditionalChinese).settingsTitle, "設定")
         XCTAssertEqual(AppStrings(language: .english).settingsTitle, "Settings")
+        XCTAssertEqual(AppStrings(language: .japanese).settingsTitle, "設定")
+        XCTAssertEqual(AppStrings(language: .korean).settingsTitle, "설정")
         XCTAssertEqual(AppStrings(language: .english).unitName(.dpi), "Dots per inch")
         XCTAssertEqual(AppStrings(language: .traditionalChinese).resetImage, "重設目前圖片")
         XCTAssertEqual(AppStrings(language: .english).undoHint, "Undo the last adjustment (⌘Z)")
+        XCTAssertEqual(AppLanguage.allCases.map(\.displayName), ["简体中文", "繁體中文", "English", "日本語", "한국어", "Español", "Français", "Deutsch", "Português (Brasil)"])
+        XCTAssertEqual(AppStrings(language: .spanish).settingsTitle, "Ajustes")
+        XCTAssertEqual(AppStrings(language: .french).settingsTitle, "Réglages")
+        XCTAssertEqual(AppStrings(language: .german).settingsTitle, "Einstellungen")
+        XCTAssertEqual(AppStrings(language: .portugueseBrazil).settingsTitle, "Ajustes")
     }
 
     func testErrorsFollowSelectedLanguage() {
         let error = ImgDeckError.imageReadFailed("sample.png")
         XCTAssertEqual(AppStrings(language: .traditionalChinese).errorMessage(error), "無法讀取圖片：sample.png")
         XCTAssertEqual(AppStrings(language: .english).errorMessage(error), "Unable to read image: sample.png")
+        XCTAssertEqual(AppStrings(language: .japanese).errorMessage(error), "画像を読み込めません：sample.png")
+        XCTAssertEqual(AppStrings(language: .korean).errorMessage(error), "이미지를 읽을 수 없습니다: sample.png")
+        XCTAssertEqual(AppStrings(language: .spanish).errorMessage(error), "No se puede leer la imagen: sample.png")
+        XCTAssertEqual(AppStrings(language: .french).errorMessage(error), "Impossible de lire l’image : sample.png")
+        XCTAssertEqual(AppStrings(language: .german).errorMessage(error), "Bild kann nicht gelesen werden: sample.png")
+        XCTAssertEqual(AppStrings(language: .portugueseBrazil).errorMessage(error), "Não foi possível ler a imagem: sample.png")
     }
 
     private func makeCGImage(width: Int, height: Int, gray: UInt8) throws -> CGImage {
@@ -145,6 +158,12 @@ final class PageRendererTests: XCTestCase {
 
 @MainActor
 final class ImageDeckViewModelTests: XCTestCase {
+    func testDefaultLayoutIsTwoByTwo() {
+        let viewModel = ImageDeckViewModel()
+        XCTAssertEqual(viewModel.selectedLayout.id, "2x2")
+        XCTAssertEqual(viewModel.selectedLayout.capacity, 4)
+    }
+
     func testMovingIntoEmptySlotAndOccupiedSlot() {
         let viewModel = ImageDeckViewModel()
         viewModel.selectLayout(LayoutOption(id: "3x3", rows: 3, columns: 3))
@@ -232,6 +251,12 @@ final class ImageDeckViewModelTests: XCTestCase {
         XCTAssertEqual(AppStrings(language: .simplifiedChinese).imagesAndLayout(remaining: 5), "图片与版式（还可导入5张）")
         XCTAssertEqual(AppStrings(language: .traditionalChinese).imagesAndLayout(remaining: 5), "圖片與版式（還可匯入5張）")
         XCTAssertEqual(AppStrings(language: .english).imagesAndLayout(remaining: 5), "Images & Layout (5 more available)")
+        XCTAssertEqual(AppStrings(language: .japanese).imagesAndLayout(remaining: 5), "画像とレイアウト（あと5枚追加可能）")
+        XCTAssertEqual(AppStrings(language: .korean).imagesAndLayout(remaining: 5), "이미지 및 레이아웃(5장 더 추가 가능)")
+        XCTAssertEqual(AppStrings(language: .spanish).imagesAndLayout(remaining: 5), "Imágenes y diseño (se pueden añadir 5 más)")
+        XCTAssertEqual(AppStrings(language: .french).imagesAndLayout(remaining: 5), "Images et disposition (encore 5 disponibles)")
+        XCTAssertEqual(AppStrings(language: .german).imagesAndLayout(remaining: 5), "Bilder und Layout (noch 5 verfügbar)")
+        XCTAssertEqual(AppStrings(language: .portugueseBrazil).imagesAndLayout(remaining: 5), "Imagens e layout (mais 5 disponíveis)")
     }
 
     func testSwitchingToSmallerLayoutPreservesHiddenSlot() {

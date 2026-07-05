@@ -8,13 +8,15 @@ struct LayoutOption: Identifiable, Hashable {
     var capacity: Int { rows * columns }
     var label: String { "\(rows)×\(columns)" }
 
+    static let defaultLayout = LayoutOption(id: "2x2", rows: 2, columns: 2)
+
     static let all: [LayoutOption] = [
         .init(id: "1x1", rows: 1, columns: 1),
         .init(id: "2x1", rows: 2, columns: 1),
         .init(id: "1x2", rows: 1, columns: 2),
         .init(id: "3x1", rows: 3, columns: 1),
         .init(id: "1x3", rows: 1, columns: 3),
-        .init(id: "2x2", rows: 2, columns: 2),
+        defaultLayout,
         .init(id: "3x2", rows: 3, columns: 2),
         .init(id: "3x3", rows: 3, columns: 3),
     ]

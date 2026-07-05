@@ -22,7 +22,7 @@ struct ContentView: View {
                 controls
                     .frame(maxHeight: .infinity, alignment: .top)
             }
-            .frame(width: 360)
+            .frame(width: 450)
             .frame(maxHeight: .infinity, alignment: .top)
 
             VStack(alignment: .leading, spacing: 16) {
