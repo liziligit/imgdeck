@@ -229,9 +229,9 @@ final class ImageDeckViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.remainingCapacity, 9)
         viewModel.addImages(from: (1...4).map { URL(fileURLWithPath: "/tmp/\($0).png") })
         XCTAssertEqual(viewModel.remainingCapacity, 5)
-        XCTAssertEqual(AppStrings(language: .simplifiedChinese).imagesAndLayout(remaining: 5), "图片与版式（可导入5张）")
-        XCTAssertEqual(AppStrings(language: .traditionalChinese).imagesAndLayout(remaining: 5), "圖片與版式（可匯入5張）")
-        XCTAssertEqual(AppStrings(language: .english).imagesAndLayout(remaining: 5), "Images & Layout (5 available)")
+        XCTAssertEqual(AppStrings(language: .simplifiedChinese).imagesAndLayout(remaining: 5), "图片与版式（还可导入5张）")
+        XCTAssertEqual(AppStrings(language: .traditionalChinese).imagesAndLayout(remaining: 5), "圖片與版式（還可匯入5張）")
+        XCTAssertEqual(AppStrings(language: .english).imagesAndLayout(remaining: 5), "Images & Layout (5 more available)")
     }
 
     func testSwitchingToSmallerLayoutPreservesHiddenSlot() {

@@ -59,16 +59,25 @@ struct ContentView: View {
                     ForEach(0..<9, id: \.self) { index in
                         Group {
                             if let item = viewModel.slots[index] {
-                                Text("\(index + 1). \(item.url.lastPathComponent)")
-                                    .lineLimit(1)
-                                    .tag(item.id)
-                                    .help(item.url.path)
+                                HStack(spacing: 4) {
+                                    Text("\(index + 1).")
+                                        .fontWeight(.bold)
+                                        .frame(width: 24, alignment: .trailing)
+                                    Text(item.url.lastPathComponent)
+                                        .lineLimit(1)
+                                    Spacer(minLength: 0)
+                                }
+                                .tag(item.id)
+                                .help(item.url.path)
                             } else {
-                                Text(" ")
-                                    .accessibilityHidden(true)
+                                HStack(spacing: 4) {
+                                    Text("\(index + 1).")
+                                        .frame(width: 24, alignment: .trailing)
+                                    Spacer(minLength: 0)
+                                }
                             }
                         }
-                        .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 24, alignment: .leading)
+                        .frame(maxWidth: .infinity, minHeight: 25, maxHeight: 25, alignment: .leading)
                         .overlay(alignment: .top) {
                             if index == 0 {
                                 Rectangle()
@@ -85,7 +94,7 @@ struct ContentView: View {
                         .listRowSeparator(.hidden)
                     }
                 }
-                .frame(minHeight: 201, maxHeight: .infinity)
+                .frame(minHeight: 210, maxHeight: .infinity)
                 .accessibilityLabel(strings.selectedImages)
 
                 HStack(spacing: 8) {
