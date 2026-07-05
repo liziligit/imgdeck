@@ -215,7 +215,7 @@ struct AppStrings {
         [
             .spanish: [
                 "ImgDeck A4 Image Layout": "ImgDeck Diseño de imágenes A4",
-                "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.": "Elige entre 1 y 9 imágenes y un diseño. Mueve las imágenes a cualquier celda disponible;\nlas celdas sin usar permanecen blancas.",
+                "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.": "Elige de 1 a 9 imágenes y un diseño; muévelas a cualquier celda.\nLas celdas sin usar permanecen blancas.",
                 "Selected images": "Imágenes seleccionadas", "Add Images": "Añadir imágenes", "Remove": "Eliminar",
                 "Move Up": "Subir", "Move Down": "Bajar", "Clear": "Borrar todo",
                 "Layout (Rows × Columns)": "Diseño (filas × columnas)", "Resolution:": "Resolución:",
@@ -237,7 +237,7 @@ struct AppStrings {
             ],
             .french: [
                 "ImgDeck A4 Image Layout": "ImgDeck Mise en page d’images A4",
-                "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.": "Choisissez de 1 à 9 images et une disposition. Déplacez les images dans n’importe quelle case disponible ;\nles cases inutilisées restent blanches.",
+                "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.": "Choisissez 1 à 9 images et placez-les dans la case voulue.\nLes cases inutilisées restent blanches.",
                 "Selected images": "Images sélectionnées", "Add Images": "Ajouter des images", "Remove": "Supprimer", "Move Up": "Monter", "Move Down": "Descendre", "Clear": "Tout effacer",
                 "Layout (Rows × Columns)": "Disposition (lignes × colonnes)", "Resolution:": "Résolution :", "Unit": "Unité", "Preview": "Aperçu", "Save Image": "Enregistrer l’image", "Format": "Format", "Status": "État",
                 "A4 Preview (210 × 297 mm)": "Aperçu A4 (210 × 297 mm)", "OK": "OK", "Settings": "Réglages", "Interface Language": "Langue de l’interface",
@@ -256,7 +256,7 @@ struct AppStrings {
             ],
             .german: [
                 "ImgDeck A4 Image Layout": "ImgDeck A4-Bildlayout",
-                "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.": "Wähle 1–9 Bilder und ein Layout. Verschiebe Bilder in beliebige freie Felder;\nungenutzte Felder bleiben weiß.",
+                "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.": "Wähle 1–9 Bilder und verschiebe sie in beliebige freie Felder.\nUngenutzte Felder bleiben weiß.",
                 "Selected images": "Ausgewählte Bilder", "Add Images": "Bilder hinzufügen", "Remove": "Entfernen", "Move Up": "Nach oben", "Move Down": "Nach unten", "Clear": "Alles löschen",
                 "Layout (Rows × Columns)": "Layout (Zeilen × Spalten)", "Resolution:": "Auflösung:", "Unit": "Einheit", "Preview": "Vorschau", "Save Image": "Bild speichern", "Format": "Format", "Status": "Status",
                 "A4 Preview (210 × 297 mm)": "A4-Vorschau (210 × 297 mm)", "OK": "OK", "Settings": "Einstellungen", "Interface Language": "Oberflächensprache",
@@ -275,7 +275,7 @@ struct AppStrings {
             ],
             .portugueseBrazil: [
                 "ImgDeck A4 Image Layout": "ImgDeck Layout de imagens A4",
-                "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.": "Escolha de 1 a 9 imagens e um layout. Mova as imagens para qualquer espaço disponível;\nos espaços não usados permanecem brancos.",
+                "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.": "Escolha de 1 a 9 imagens e mova-as para qualquer espaço.\nOs espaços não usados permanecem brancos.",
                 "Selected images": "Imagens selecionadas", "Add Images": "Adicionar imagens", "Remove": "Remover", "Move Up": "Mover para cima", "Move Down": "Mover para baixo", "Clear": "Limpar tudo",
                 "Layout (Rows × Columns)": "Layout (linhas × colunas)", "Resolution:": "Resolução:", "Unit": "Unidade", "Preview": "Prévia", "Save Image": "Salvar imagem", "Format": "Formato", "Status": "Status",
                 "A4 Preview (210 × 297 mm)": "Prévia A4 (210 × 297 mm)", "OK": "OK", "Settings": "Ajustes", "Interface Language": "Idioma da interface",

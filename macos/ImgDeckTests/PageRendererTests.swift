@@ -117,6 +117,10 @@ final class PageRendererTests: XCTestCase {
         XCTAssertEqual(AppStrings(language: .french).settingsTitle, "Réglages")
         XCTAssertEqual(AppStrings(language: .german).settingsTitle, "Einstellungen")
         XCTAssertEqual(AppStrings(language: .portugueseBrazil).settingsTitle, "Ajustes")
+        XCTAssertEqual(AppStrings(language: .spanish).appSubtitle, "Elige de 1 a 9 imágenes y un diseño; muévelas a cualquier celda.\nLas celdas sin usar permanecen blancas.")
+        XCTAssertEqual(AppStrings(language: .french).appSubtitle, "Choisissez 1 à 9 images et placez-les dans la case voulue.\nLes cases inutilisées restent blanches.")
+        XCTAssertEqual(AppStrings(language: .portugueseBrazil).appSubtitle, "Escolha de 1 a 9 imagens e mova-as para qualquer espaço.\nOs espaços não usados permanecem brancos.")
+        XCTAssertEqual(AppStrings(language: .german).appSubtitle, "Wähle 1–9 Bilder und verschiebe sie in beliebige freie Felder.\nUngenutzte Felder bleiben weiß.")
     }
 
     func testErrorsFollowSelectedLanguage() {
