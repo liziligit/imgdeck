@@ -4,7 +4,7 @@ ImgDeck 是使用 SwiftUI 开发的原生 macOS A4 图片排版工具，基于�
 
 ## 软件界面
 
-![ImgDeck 软件界面](app-store/screenshots/screenshot.png)
+![ImgDeck 软件界面](<app-store/screenshots/Canvas 1N.png>)
 
 ## 支持与隐私
 
