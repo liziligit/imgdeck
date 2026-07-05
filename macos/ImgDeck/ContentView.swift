@@ -53,12 +53,11 @@ struct ContentView: View {
     }
 
     private var controls: some View {
-        GroupBox(strings.imagesAndLayout) {
+        GroupBox(strings.imagesAndLayout(remaining: viewModel.remainingCapacity)) {
             VStack(spacing: 10) {
                 List(selection: $viewModel.selectedID) {
                     ForEach(0..<9, id: \.self) { index in
-                        if viewModel.items.indices.contains(index) {
-                            let item = viewModel.items[index]
+                        if let item = viewModel.slots[index] {
                             Text("\(index + 1). \(item.url.lastPathComponent)")
                                 .lineLimit(1)
                                 .tag(item.id)
@@ -75,6 +74,7 @@ struct ContentView: View {
                 HStack(spacing: 8) {
                     Button(strings.addImages, systemImage: "photo.badge.plus", action: viewModel.chooseImages)
                         .frame(maxWidth: .infinity)
+                        .disabled(viewModel.imageCount == 9)
                     Button(strings.remove, systemImage: "minus.circle", action: viewModel.removeSelected)
                         .frame(maxWidth: .infinity)
                         .disabled(!viewModel.canRemove)
@@ -89,7 +89,7 @@ struct ContentView: View {
                         .disabled(!viewModel.canMoveDown)
                     Button(strings.clear, systemImage: "trash", action: viewModel.clearImages)
                         .frame(maxWidth: .infinity)
-                        .disabled(viewModel.items.isEmpty)
+                        .disabled(viewModel.imageCount == 0)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -285,7 +285,7 @@ private struct A4Editor: View {
                 .shadow(color: .black.opacity(0.22), radius: 8, y: 3)
             }
         }
-        .accessibilityLabel(viewModel.items.isEmpty ? strings.blankPreview : strings.resultPreview)
+        .accessibilityLabel(viewModel.imageCount == 0 ? strings.blankPreview : strings.resultPreview)
     }
 
     private func fittedPageSize(in available: CGSize) -> CGSize {
@@ -314,7 +314,7 @@ private struct PageEditorCanvas: View {
                 ForEach(0..<viewModel.selectedLayout.capacity, id: \.self) { index in
                     let row = index / viewModel.selectedLayout.columns
                     let column = index % viewModel.selectedLayout.columns
-                    let item = viewModel.items.indices.contains(index) ? viewModel.items[index] : nil
+                    let item = viewModel.slots[index]
                     EditableImageCell(
                         index: index,
                         item: item,

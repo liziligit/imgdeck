@@ -22,8 +22,10 @@ struct AppStrings {
     let language: AppLanguage
 
     var appTitle: String { text("ImgDeck A4 图片拼接", "ImgDeck A4 圖片拼接", "ImgDeck A4 Image Layout") }
-    var appSubtitle: String { text("选择 1–9 张图片和版式，图片按列表顺序填入，\n未使用的位置保留白色。", "選擇 1–9 張圖片和版式，圖片按列表順序填入，\n未使用的位置保留白色。", "Choose 1–9 images and a layout. Images fill cells in list order;\nunused cells remain white.") }
-    var imagesAndLayout: String { text("图片与版式", "圖片與版式", "Images & Layout") }
+    var appSubtitle: String { text("选择 1–9 张图片和版式，可将图片移动到任意格位，\n未使用的位置保留白色。", "選擇 1–9 張圖片和版式，可將圖片移動到任意格位，\n未使用的位置保留白色。", "Choose 1–9 images and a layout. Move images to any available cell;\nunused cells remain white.") }
+    func imagesAndLayout(remaining: Int) -> String {
+        text("图片与版式（可导入\(remaining)张）", "圖片與版式（可匯入\(remaining)張）", "Images & Layout (\(remaining) available)")
+    }
     var selectedImages: String { text("已选图片列表", "已選圖片列表", "Selected images") }
     var addImages: String { text("添加图片", "加入圖片", "Add Images") }
     var remove: String { text("移除", "移除", "Remove") }

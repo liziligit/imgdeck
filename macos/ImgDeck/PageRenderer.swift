@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 
 enum PageRenderer {
     static func render(
-        imageURLs: [URL],
+        imageURLs: [URL?],
         transforms: [ImageTransform] = [],
         layout: LayoutOption,
         width: Int,
@@ -13,7 +13,8 @@ enum PageRenderer {
     ) throws -> CGImage {
         let cellWidth = width / layout.columns
         let cellHeight = height / layout.rows
-        let images = try imageURLs.prefix(layout.capacity).enumerated().map { index, url in
+        let images: [CGImage?] = try imageURLs.prefix(layout.capacity).enumerated().map { index, url in
+            guard let url else { return nil }
             let transform = transforms.indices.contains(index) ? transforms[index] : .identity
             let maximumScale = max(transform.scaleX, transform.scaleY, 1)
             let maximumDimension = Int(ceil(CGFloat(max(cellWidth, cellHeight)) * maximumScale))
@@ -22,11 +23,21 @@ enum PageRenderer {
             }
             return image
         }
-        return try render(images: images, transforms: transforms, layout: layout, width: width, height: height)
+        return try render(imageSlots: images, transforms: transforms, layout: layout, width: width, height: height)
     }
 
     static func render(
         images: [CGImage],
+        transforms: [ImageTransform] = [],
+        layout: LayoutOption,
+        width: Int,
+        height: Int
+    ) throws -> CGImage {
+        try render(imageSlots: images.map(Optional.some), transforms: transforms, layout: layout, width: width, height: height)
+    }
+
+    static func render(
+        imageSlots: [CGImage?],
         transforms: [ImageTransform] = [],
         layout: LayoutOption,
         width: Int,
@@ -48,7 +59,8 @@ enum PageRenderer {
         context.fill(CGRect(x: 0, y: 0, width: width, height: height))
         context.interpolationQuality = .high
 
-        for (index, image) in images.prefix(layout.capacity).enumerated() {
+        for (index, image) in imageSlots.prefix(layout.capacity).enumerated() {
+            guard let image else { continue }
             let transform = transforms.indices.contains(index) ? transforms[index] : .identity
             let row = index / layout.columns
             let column = index % layout.columns

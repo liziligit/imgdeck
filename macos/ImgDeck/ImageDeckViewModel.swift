@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 @MainActor
 final class ImageDeckViewModel: ObservableObject {
-    @Published var items: [ImageItem] = []
+    @Published var slots: [ImageItem?] = Array(repeating: nil, count: 9)
     @Published var selectedID: ImageItem.ID?
     @Published var selectedLayout = LayoutOption.all[0]
     @Published var resolutionText = "72"
@@ -25,6 +25,10 @@ final class ImageDeckViewModel: ObservableObject {
     private var strings: AppStrings { AppStrings(language: language) }
     private weak var undoManager: UndoManager?
     private var imageCache: [ImageItem.ID: NSImage] = [:]
+
+    var items: [ImageItem] { slots.compactMap { $0 } }
+    var imageCount: Int { items.count }
+    var remainingCapacity: Int { 9 - imageCount }
 
     init() {
         updateStatus()
@@ -64,7 +68,7 @@ final class ImageDeckViewModel: ObservableObject {
 
     var canMoveDown: Bool {
         guard let selectedIndex else { return false }
-        return selectedIndex < items.count - 1
+        return selectedIndex < selectedLayout.capacity - 1
     }
 
     var canRemove: Bool { selectedIndex != nil }
@@ -141,7 +145,7 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     func chooseImages() {
-        let remaining = 9 - items.count
+        let remaining = remainingCapacity
         guard remaining > 0 else {
             alert = .init(title: strings.maximumReachedTitle, message: strings.maximumReachedMessage)
             return
@@ -154,38 +158,49 @@ final class ImageDeckViewModel: ObservableObject {
         panel.canChooseDirectories = false
         guard panel.runModal() == .OK else { return }
 
-        var urls = panel.urls
+        addImages(from: panel.urls)
+    }
+
+    @discardableResult
+    func addImages(from urls: [URL]) -> Int {
+        let remaining = remainingCapacity
+        let startIndex = selectedIndex.map { ($0 + 1) % slots.count } ?? 0
+        let emptyIndices = (0..<slots.count)
+            .map { (startIndex + $0) % slots.count }
+            .filter { slots[$0] == nil }
         if urls.count > remaining {
-            urls = Array(urls.prefix(remaining))
             alert = .init(title: strings.tooManyImagesTitle, message: strings.remainingImagesMessage(remaining))
         }
-        let newItems = urls.map { ImageItem(url: $0) }
+        let acceptedURLs = Array(urls.prefix(remaining))
+        let newItems = acceptedURLs.map { ImageItem(url: $0) }
         for item in newItems {
             imageTransforms[item.id] = .identity
             imageCache[item.id] = NSImage(contentsOf: item.url)
         }
-        items.append(contentsOf: newItems)
-        selectedID = newItems.first?.id
+        for (item, emptyIndex) in zip(newItems, emptyIndices) {
+            slots[emptyIndex] = item
+        }
+        if let firstID = newItems.first?.id {
+            selectedID = firstID
+        }
         invalidatePreview()
         refreshStatus()
+        return newItems.count
     }
 
     func removeSelected() {
         guard let index = selectedIndex else { return }
-        let removed = items.remove(at: index)
+        guard let removed = slots[index] else { return }
+        slots[index] = nil
         imageTransforms.removeValue(forKey: removed.id)
         imageCache.removeValue(forKey: removed.id)
-        if items.isEmpty {
-            selectedID = nil
-        } else {
-            selectedID = items[min(index, items.count - 1)].id
-        }
+        selectedID = nil
         invalidatePreview()
         refreshStatus()
     }
 
     func clearImages() {
-        items.removeAll()
+        slots = Array(repeating: nil, count: 9)
         imageTransforms.removeAll()
         imageCache.removeAll()
         selectedID = nil
@@ -196,9 +211,8 @@ final class ImageDeckViewModel: ObservableObject {
     func moveSelected(by offset: Int) {
         guard let oldIndex = selectedIndex else { return }
         let newIndex = oldIndex + offset
-        guard items.indices.contains(newIndex) else { return }
-        items.swapAt(oldIndex, newIndex)
-        selectedID = items[newIndex].id
+        guard newIndex >= 0, offset < 0 || newIndex < selectedLayout.capacity else { return }
+        slots.swapAt(oldIndex, newIndex)
         invalidatePreview()
         refreshStatus()
     }
@@ -217,7 +231,7 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     func renderPreview() {
-        guard !items.isEmpty else {
+        guard imageCount > 0 else {
             alert = .init(title: strings.noImagesTitle, message: strings.noImagesMessage)
             return
         }
@@ -227,8 +241,8 @@ final class ImageDeckViewModel: ObservableObject {
         do {
             let size = try outputSize()
             let image = try PageRenderer.render(
-                imageURLs: items.map(\.url),
-                transforms: items.map { transform(for: $0.id) },
+                imageURLs: slots.map { $0?.url },
+                transforms: slots.map { $0.map { transform(for: $0.id) } ?? .identity },
                 layout: selectedLayout,
                 width: size.width,
                 height: size.height
@@ -237,9 +251,9 @@ final class ImageDeckViewModel: ObservableObject {
             renderedSize = size
             previewImage = NSImage(cgImage: image, size: NSSize(width: size.width, height: size.height))
 
-            let shown = min(items.count, selectedLayout.capacity)
+            let shown = slots.prefix(selectedLayout.capacity).compactMap { $0 }.count
             let blanks = selectedLayout.capacity - shown
-            let hidden = max(0, items.count - selectedLayout.capacity)
+            let hidden = slots.dropFirst(selectedLayout.capacity).compactMap { $0 }.count
             statusState = .preview(width: size.width, height: size.height, shown: shown, blanks: blanks, hidden: hidden)
             updateStatus()
         } catch {
@@ -248,13 +262,13 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     func saveResult() {
-        guard !items.isEmpty else { return }
+        guard imageCount > 0 else { return }
         let image: CGImage
         do {
             let size = try outputSize()
             image = try PageRenderer.render(
-                imageURLs: items.map(\.url),
-                transforms: items.map { transform(for: $0.id) },
+                imageURLs: slots.map { $0?.url },
+                transforms: slots.map { $0.map { transform(for: $0.id) } ?? .identity },
                 layout: selectedLayout,
                 width: size.width,
                 height: size.height
@@ -295,7 +309,7 @@ final class ImageDeckViewModel: ObservableObject {
 
     private var selectedIndex: Int? {
         guard let selectedID else { return nil }
-        return items.firstIndex { $0.id == selectedID }
+        return slots.firstIndex { $0?.id == selectedID }
     }
 
     private func outputSize() throws -> (width: Int, height: Int) {
@@ -312,7 +326,7 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     private func refreshStatus() {
-        statusState = items.isEmpty ? .initial : .selection
+        statusState = imageCount == 0 ? .initial : .selection
         updateStatus()
     }
 
@@ -321,7 +335,7 @@ final class ImageDeckViewModel: ObservableObject {
         case .initial:
             status = strings.initialStatus
         case .selection:
-            status = strings.selectionStatus(count: items.count, layout: selectedLayout.label, capacity: selectedLayout.capacity)
+            status = strings.selectionStatus(count: imageCount, layout: selectedLayout.label, capacity: selectedLayout.capacity)
         case .resolutionChanged:
             status = strings.resolutionChanged
         case .preview(let width, let height, let shown, let blanks, let hidden):
