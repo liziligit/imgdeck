@@ -36,6 +36,23 @@ enum OutputFormat: String, CaseIterable, Identifiable {
     var fileExtension: String { self == .png ? "png" : "jpg" }
 }
 
+enum ImageScalingMode: String, CaseIterable, Identifiable {
+    case proportional
+    case free
+
+    var id: Self { self }
+}
+
+struct ImageTransform: Equatable {
+    var offsetX: CGFloat = 0
+    var offsetY: CGFloat = 0
+    var scaleX: CGFloat = 1
+    var scaleY: CGFloat = 1
+    var scalingMode: ImageScalingMode = .proportional
+
+    static let identity = ImageTransform()
+}
+
 struct ImageItem: Identifiable, Equatable {
     let id: UUID
     let url: URL

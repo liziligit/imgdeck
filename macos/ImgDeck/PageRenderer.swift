@@ -6,23 +6,28 @@ import UniformTypeIdentifiers
 enum PageRenderer {
     static func render(
         imageURLs: [URL],
+        transforms: [ImageTransform] = [],
         layout: LayoutOption,
         width: Int,
         height: Int
     ) throws -> CGImage {
         let cellWidth = width / layout.columns
         let cellHeight = height / layout.rows
-        let images = try imageURLs.prefix(layout.capacity).map { url in
-            guard let image = loadImage(at: url, maximumDimension: max(cellWidth, cellHeight)) else {
+        let images = try imageURLs.prefix(layout.capacity).enumerated().map { index, url in
+            let transform = transforms.indices.contains(index) ? transforms[index] : .identity
+            let maximumScale = max(transform.scaleX, transform.scaleY, 1)
+            let maximumDimension = Int(ceil(CGFloat(max(cellWidth, cellHeight)) * maximumScale))
+            guard let image = loadImage(at: url, maximumDimension: maximumDimension) else {
                 throw ImgDeckError.imageReadFailed(url.lastPathComponent)
             }
             return image
         }
-        return try render(images: images, layout: layout, width: width, height: height)
+        return try render(images: images, transforms: transforms, layout: layout, width: width, height: height)
     }
 
     static func render(
         images: [CGImage],
+        transforms: [ImageTransform] = [],
         layout: LayoutOption,
         width: Int,
         height: Int
@@ -44,6 +49,7 @@ enum PageRenderer {
         context.interpolationQuality = .high
 
         for (index, image) in images.prefix(layout.capacity).enumerated() {
+            let transform = transforms.indices.contains(index) ? transforms[index] : .identity
             let row = index / layout.columns
             let column = index % layout.columns
             let x1 = width * column / layout.columns
@@ -57,16 +63,21 @@ enum PageRenderer {
                 CGFloat(cellWidth) / CGFloat(image.width),
                 CGFloat(cellHeight) / CGFloat(image.height)
             )
-            let drawWidth = min(cellWidth, max(1, Int((CGFloat(image.width) * scale).rounded())))
-            let drawHeight = min(cellHeight, max(1, Int((CGFloat(image.height) * scale).rounded())))
-            let drawX = x1 + (cellWidth - drawWidth) / 2
-            let imageTop = y1 + (cellHeight - drawHeight) / 2
+            let baseWidth = CGFloat(image.width) * scale
+            let baseHeight = CGFloat(image.height) * scale
+            let drawWidth = max(1, Int((baseWidth * transform.scaleX).rounded()))
+            let drawHeight = max(1, Int((baseHeight * transform.scaleY).rounded()))
+            let drawX = x1 + (cellWidth - drawWidth) / 2 + Int((transform.offsetX * CGFloat(cellWidth)).rounded())
+            let imageTop = y1 + (cellHeight - drawHeight) / 2 + Int((transform.offsetY * CGFloat(cellHeight)).rounded())
             let drawY = height - imageTop - drawHeight
 
+            context.saveGState()
+            context.clip(to: CGRect(x: x1, y: height - y2, width: cellWidth, height: cellHeight))
             context.draw(
                 image,
                 in: CGRect(x: drawX, y: drawY, width: drawWidth, height: drawHeight)
             )
+            context.restoreGState()
         }
 
         guard let result = context.makeImage() else {

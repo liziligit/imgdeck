@@ -22,7 +22,7 @@ struct AppStrings {
     let language: AppLanguage
 
     var appTitle: String { text("ImgDeck A4 图片拼接", "ImgDeck A4 圖片拼接", "ImgDeck A4 Image Layout") }
-    var appSubtitle: String { text("选择 1–9 张图片和版式，图片按列表顺序填入，未使用的位置保留白色。", "選擇 1–9 張圖片和版式，圖片按列表順序填入，未使用的位置保留白色。", "Choose 1–9 images and a layout. Images fill cells in list order; unused cells remain white.") }
+    var appSubtitle: String { text("选择 1–9 张图片和版式，图片按列表顺序填入，\n未使用的位置保留白色。", "選擇 1–9 張圖片和版式，圖片按列表順序填入，\n未使用的位置保留白色。", "Choose 1–9 images and a layout. Images fill cells in list order;\nunused cells remain white.") }
     var imagesAndLayout: String { text("图片与版式", "圖片與版式", "Images & Layout") }
     var selectedImages: String { text("已选图片列表", "已選圖片列表", "Selected images") }
     var addImages: String { text("添加图片", "加入圖片", "Add Images") }
@@ -46,6 +46,17 @@ struct AppStrings {
     var resultPreview: String { text("A4 拼接结果预览", "A4 拼接結果預覽", "A4 layout result preview") }
     var layoutAccessibilitySuffix: String { text("版式", "版式", "layout") }
     var noSelection: String { text("所选图片：尚未选择", "所選圖片：尚未選擇", "Selected image: None") }
+    var proportionalScaling: String { text("保持长宽比", "保持長寬比", "Keep Aspect Ratio") }
+    var freeScaling: String { text("自由拉伸", "自由拉伸", "Free Transform") }
+    var resetImage: String { text("重置当前图片", "重設目前圖片", "Reset Image") }
+    var undoHint: String { text("撤销上一次调整（⌘Z）", "還原上一次調整（⌘Z）", "Undo the last adjustment (⌘Z)") }
+    var redoHint: String { text("重做上一次调整（⇧⌘Z）", "重做上一次調整（⇧⌘Z）", "Redo the last adjustment (⇧⌘Z)") }
+    var editImageHint: String { text("拖动图片调整位置，拖动控制点调整大小；蓝色虚线外的内容不会导出。", "拖動圖片調整位置，拖動控制點調整大小；藍色虛線外的內容不會匯出。", "Drag an image to reposition it and drag handles to resize. Content outside the blue dashed line is not exported.") }
+    var adjustImageAction: String { text("调整图片", "調整圖片", "Adjust Image") }
+    var changeScalingModeAction: String { text("更改拉伸方式", "更改拉伸方式", "Change Scaling Mode") }
+    var resetImageAction: String { text("重置图片", "重設圖片", "Reset Image") }
+    var imageCell: String { text("图片格", "圖片格", "Image cell") }
+    var resizeHandle: String { text("缩放控制点", "縮放控制點", "Resize handle") }
 
     func selectedPath(_ path: String) -> String {
         text("所选图片：\(path)", "所選圖片：\(path)", "Selected image: \(path)")

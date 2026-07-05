@@ -41,6 +41,46 @@ final class PageRendererTests: XCTestCase {
         XCTAssertLessThan(pixel(in: result, x: 100, y: 100), 100)
     }
 
+    func testDefaultTransformFitsWithoutCropping() throws {
+        let source = try makeCGImage(width: 200, height: 100, gray: 40)
+        let result = try PageRenderer.render(
+            images: [source],
+            transforms: [.identity],
+            layout: LayoutOption(id: "1x1", rows: 1, columns: 1),
+            width: 200,
+            height: 200
+        )
+        XCTAssertEqual(pixel(in: result, x: 10, y: 10), 255)
+        XCTAssertLessThan(pixel(in: result, x: 100, y: 100), 100)
+    }
+
+    func testImageContentIsClippedToItsCell() throws {
+        let source = try makeCGImage(width: 100, height: 100, gray: 30)
+        let transform = ImageTransform(offsetX: 0.75, offsetY: 0, scaleX: 2, scaleY: 2)
+        let result = try PageRenderer.render(
+            images: [source],
+            transforms: [transform],
+            layout: LayoutOption(id: "1x2", rows: 1, columns: 2),
+            width: 200,
+            height: 100
+        )
+        XCTAssertLessThan(pixel(in: result, x: 90, y: 50), 100)
+        XCTAssertEqual(pixel(in: result, x: 110, y: 50), 255)
+    }
+
+    func testScalingModesStoreIndependentDimensions() {
+        var proportional = ImageTransform.identity
+        proportional.scaleX = 1.5
+        proportional.scaleY = 1.5
+        XCTAssertEqual(proportional.scaleX, proportional.scaleY)
+
+        var free = ImageTransform.identity
+        free.scalingMode = .free
+        free.scaleX = 1.5
+        free.scaleY = 0.75
+        XCTAssertNotEqual(free.scaleX, free.scaleY)
+    }
+
     func testEncodesPNGAndJPEG() throws {
         let image = try makeCGImage(width: 50, height: 50, gray: 100)
         XCTAssertGreaterThan(try PageRenderer.encodedData(for: image, format: .png).count, 0)
@@ -52,6 +92,8 @@ final class PageRendererTests: XCTestCase {
         XCTAssertEqual(AppStrings(language: .traditionalChinese).settingsTitle, "設定")
         XCTAssertEqual(AppStrings(language: .english).settingsTitle, "Settings")
         XCTAssertEqual(AppStrings(language: .english).unitName(.dpi), "Dots per inch")
+        XCTAssertEqual(AppStrings(language: .traditionalChinese).resetImage, "重設目前圖片")
+        XCTAssertEqual(AppStrings(language: .english).undoHint, "Undo the last adjustment (⌘Z)")
     }
 
     func testErrorsFollowSelectedLanguage() {

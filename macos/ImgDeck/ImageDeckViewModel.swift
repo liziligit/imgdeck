@@ -16,10 +16,15 @@ final class ImageDeckViewModel: ObservableObject {
     @Published var status = ""
     @Published var alert: AlertMessage?
     @Published var isRendering = false
+    @Published private(set) var imageTransforms: [ImageItem.ID: ImageTransform] = [:]
+    @Published private(set) var canUndo = false
+    @Published private(set) var canRedo = false
 
     private var language: AppLanguage = .simplifiedChinese
     private var statusState = StatusState.initial
     private var strings: AppStrings { AppStrings(language: language) }
+    private weak var undoManager: UndoManager?
+    private var imageCache: [ImageItem.ID: NSImage] = [:]
 
     init() {
         updateStatus()
@@ -63,11 +68,76 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     var canRemove: Bool { selectedIndex != nil }
-    var canSave: Bool { renderedImage != nil }
+    var canSave: Bool { !items.isEmpty }
+
+    var selectedTransform: ImageTransform? {
+        guard let selectedID else { return nil }
+        return transform(for: selectedID)
+    }
 
     func setLanguage(_ language: AppLanguage) {
         self.language = language
         updateStatus()
+    }
+
+    func setUndoManager(_ undoManager: UndoManager?) {
+        self.undoManager = undoManager
+        refreshUndoAvailability()
+    }
+
+    func undoLastChange() {
+        undoManager?.undo()
+        refreshUndoAvailability()
+    }
+
+    func redoLastChange() {
+        undoManager?.redo()
+        refreshUndoAvailability()
+    }
+
+    func image(for item: ImageItem) -> NSImage? {
+        if let cached = imageCache[item.id] { return cached }
+        let image = NSImage(contentsOf: item.url)
+        imageCache[item.id] = image
+        return image
+    }
+
+    func transform(for id: ImageItem.ID) -> ImageTransform {
+        imageTransforms[id] ?? .identity
+    }
+
+    func updateTransform(_ transform: ImageTransform, for id: ImageItem.ID) {
+        imageTransforms[id] = transform
+        invalidatePreview()
+    }
+
+    func commitTransformChange(from oldValue: ImageTransform, for id: ImageItem.ID) {
+        let newValue = transform(for: id)
+        guard oldValue != newValue else { return }
+        registerUndo(value: oldValue, for: id, actionName: strings.adjustImageAction)
+    }
+
+    func setScalingMode(_ mode: ImageScalingMode) {
+        guard let id = selectedID else { return }
+        let oldValue = transform(for: id)
+        guard oldValue.scalingMode != mode else { return }
+        var newValue = oldValue
+        newValue.scalingMode = mode
+        if mode == .proportional {
+            let scale = max(newValue.scaleX, newValue.scaleY)
+            newValue.scaleX = scale
+            newValue.scaleY = scale
+        }
+        updateTransform(newValue, for: id)
+        registerUndo(value: oldValue, for: id, actionName: strings.changeScalingModeAction)
+    }
+
+    func resetSelectedTransform() {
+        guard let id = selectedID else { return }
+        let oldValue = transform(for: id)
+        guard oldValue != .identity else { return }
+        updateTransform(.identity, for: id)
+        registerUndo(value: oldValue, for: id, actionName: strings.resetImageAction)
     }
 
     func chooseImages() {
@@ -90,6 +160,10 @@ final class ImageDeckViewModel: ObservableObject {
             alert = .init(title: strings.tooManyImagesTitle, message: strings.remainingImagesMessage(remaining))
         }
         let newItems = urls.map { ImageItem(url: $0) }
+        for item in newItems {
+            imageTransforms[item.id] = .identity
+            imageCache[item.id] = NSImage(contentsOf: item.url)
+        }
         items.append(contentsOf: newItems)
         selectedID = newItems.first?.id
         invalidatePreview()
@@ -98,7 +172,9 @@ final class ImageDeckViewModel: ObservableObject {
 
     func removeSelected() {
         guard let index = selectedIndex else { return }
-        items.remove(at: index)
+        let removed = items.remove(at: index)
+        imageTransforms.removeValue(forKey: removed.id)
+        imageCache.removeValue(forKey: removed.id)
         if items.isEmpty {
             selectedID = nil
         } else {
@@ -110,6 +186,8 @@ final class ImageDeckViewModel: ObservableObject {
 
     func clearImages() {
         items.removeAll()
+        imageTransforms.removeAll()
+        imageCache.removeAll()
         selectedID = nil
         invalidatePreview()
         refreshStatus()
@@ -150,6 +228,7 @@ final class ImageDeckViewModel: ObservableObject {
             let size = try outputSize()
             let image = try PageRenderer.render(
                 imageURLs: items.map(\.url),
+                transforms: items.map { transform(for: $0.id) },
                 layout: selectedLayout,
                 width: size.width,
                 height: size.height
@@ -169,7 +248,23 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     func saveResult() {
-        guard let renderedImage else { return }
+        guard !items.isEmpty else { return }
+        let image: CGImage
+        do {
+            let size = try outputSize()
+            image = try PageRenderer.render(
+                imageURLs: items.map(\.url),
+                transforms: items.map { transform(for: $0.id) },
+                layout: selectedLayout,
+                width: size.width,
+                height: size.height
+            )
+            renderedImage = image
+            renderedSize = size
+        } catch {
+            alert = .init(title: strings.renderFailedTitle, message: strings.errorMessage(error))
+            return
+        }
         let panel = NSSavePanel()
         panel.title = strings.savePanelTitle
         panel.allowedContentTypes = outputFormat == .png ? [.png] : [.jpeg]
@@ -183,7 +278,7 @@ final class ImageDeckViewModel: ObservableObject {
         }
 
         do {
-            let data = try PageRenderer.encodedData(for: renderedImage, format: outputFormat)
+            let data = try PageRenderer.encodedData(for: image, format: outputFormat)
             try data.write(to: url, options: .atomic)
             statusState = .saved(url.path)
             updateStatus()
@@ -241,6 +336,22 @@ final class ImageDeckViewModel: ObservableObject {
             return String(format: "%.1f KB", bytes / 1024)
         }
         return String(format: "%.1f MB", bytes / (1024 * 1024))
+    }
+
+    private func registerUndo(value: ImageTransform, for id: ImageItem.ID, actionName: String) {
+        undoManager?.registerUndo(withTarget: self) { target in
+            let current = target.transform(for: id)
+            target.updateTransform(value, for: id)
+            target.registerUndo(value: current, for: id, actionName: actionName)
+            target.refreshUndoAvailability()
+        }
+        undoManager?.setActionName(actionName)
+        refreshUndoAvailability()
+    }
+
+    private func refreshUndoAvailability() {
+        canUndo = undoManager?.canUndo ?? false
+        canRedo = undoManager?.canRedo ?? false
     }
 
     private enum StatusState {
