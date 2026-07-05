@@ -26,17 +26,17 @@
 
 ## 当前新增截图
 
-- `Canvas 1N.png`：5920×3852 PNG，中文功能概览，作为 GitHub 首页展示图；
-- `Canvas 2N.png`：5920×3845 PNG，英文界面和 2×2 排版示例；
-- `Canvas 3N.png`：5920×3661 PNG，中文界面和 3×3 满格排版示例。
+- `Canvas 1N.jpg`：2560×1600 JPG，约 568 KB，中文功能概览，作为 GitHub 首页展示图；
+- `Canvas 2N.jpg`：2560×1600 JPG，约 540 KB，英文界面和 2×2 排版示例；
+- `Canvas 3N.jpg`：2560×1600 JPG，约 654 KB，中文界面和 3×3 满格排版示例。
 
 ## 当前截图审核结果
 
 | 文件 | 状态 | 说明 |
 |---|---|---|
-| `Canvas 1N.png` | GitHub 可用 | 中文功能概览；正式提交 App Store 前建议隐藏本地路径 |
-| `Canvas 2N.png` | GitHub 可用 | 英文界面和 2×2 排版；正式提交 App Store 前建议隐藏本地路径 |
-| `Canvas 3N.png` | GitHub 可用 | 中文界面和 3×3 排版；正式提交 App Store 前建议隐藏本地路径 |
+| `Canvas 1N.jpg` | GitHub 可用 | 中文功能概览；正式提交 App Store 前建议隐藏本地路径 |
+| `Canvas 2N.jpg` | GitHub 可用 | 英文界面和 2×2 排版；正式提交 App Store 前建议隐藏本地路径 |
+| `Canvas 3N.jpg` | GitHub 可用 | 中文界面和 3×3 排版；正式提交 App Store 前建议隐藏本地路径 |
 
 ## 拍摄检查
 
