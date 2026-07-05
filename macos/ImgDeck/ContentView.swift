@@ -57,15 +57,32 @@ struct ContentView: View {
             VStack(spacing: 10) {
                 List(selection: $viewModel.selectedID) {
                     ForEach(0..<9, id: \.self) { index in
-                        if let item = viewModel.slots[index] {
-                            Text("\(index + 1). \(item.url.lastPathComponent)")
-                                .lineLimit(1)
-                                .tag(item.id)
-                                .help(item.url.path)
-                        } else {
-                            Text(" ")
-                                .accessibilityHidden(true)
+                        Group {
+                            if let item = viewModel.slots[index] {
+                                Text("\(index + 1). \(item.url.lastPathComponent)")
+                                    .lineLimit(1)
+                                    .tag(item.id)
+                                    .help(item.url.path)
+                            } else {
+                                Text(" ")
+                                    .accessibilityHidden(true)
+                            }
                         }
+                        .frame(maxWidth: .infinity, minHeight: 24, maxHeight: 24, alignment: .leading)
+                        .overlay(alignment: .top) {
+                            if index == 0 {
+                                Rectangle()
+                                    .fill(Color(nsColor: .separatorColor))
+                                    .frame(height: 2)
+                            }
+                        }
+                        .overlay(alignment: .bottom) {
+                            Rectangle()
+                                .fill(Color(nsColor: .separatorColor))
+                                .frame(height: index == 8 ? 2 : 1)
+                        }
+                        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
+                        .listRowSeparator(.hidden)
                     }
                 }
                 .frame(minHeight: 201, maxHeight: .infinity)
