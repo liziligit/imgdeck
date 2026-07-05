@@ -56,14 +56,20 @@ struct ContentView: View {
         GroupBox(strings.imagesAndLayout) {
             VStack(spacing: 10) {
                 List(selection: $viewModel.selectedID) {
-                    ForEach(Array(viewModel.items.enumerated()), id: \.element.id) { index, item in
-                        Text("\(index + 1). \(item.url.lastPathComponent)")
-                            .lineLimit(1)
-                            .tag(item.id)
-                            .help(item.url.path)
+                    ForEach(0..<9, id: \.self) { index in
+                        if viewModel.items.indices.contains(index) {
+                            let item = viewModel.items[index]
+                            Text("\(index + 1). \(item.url.lastPathComponent)")
+                                .lineLimit(1)
+                                .tag(item.id)
+                                .help(item.url.path)
+                        } else {
+                            Text(" ")
+                                .accessibilityHidden(true)
+                        }
                     }
                 }
-                .frame(minHeight: 225, maxHeight: .infinity)
+                .frame(minHeight: 201, maxHeight: .infinity)
                 .accessibilityLabel(strings.selectedImages)
 
                 HStack(spacing: 8) {
@@ -218,9 +224,9 @@ private struct LayoutButton: View {
                 LayoutGlyph(layout: layout)
                     .frame(width: 32, height: 50)
                 Text(layout.label)
-                    .font(.caption)
+                    .font(.system(size: 18, weight: .bold))
             }
-            .frame(maxWidth: .infinity, minHeight: 70)
+            .frame(maxWidth: .infinity, minHeight: 88)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -371,7 +377,7 @@ private struct EditableImageCell: View {
                     )
             } else {
                 Text("\(index + 1)")
-                    .font(.caption.bold())
+                    .font(.system(size: 88, weight: .bold))
                     .foregroundStyle(.secondary)
             }
         }
