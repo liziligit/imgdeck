@@ -80,6 +80,8 @@ struct AppStrings {
     var fitPage: String { text("适应页面", "適應頁面", "Fit Page", "ページに合わせる", "페이지에 맞춤") }
     var zoomIn: String { text("放大 5%", "放大 5%", "Zoom In 5%", "5%拡大", "5% 확대") }
     var zoomOut: String { text("缩小 5%", "縮小 5%", "Zoom Out 5%", "5%縮小", "5% 축소") }
+    var zoomInLabel: String { text("放大", "放大", "Zoom In", "拡大", "확대") }
+    var zoomOutLabel: String { text("缩小", "縮小", "Zoom Out", "縮小", "축소") }
     var imageCell: String { text("图片格", "圖片格", "Image cell", "画像枠", "이미지 칸") }
     var resizeHandle: String { text("缩放控制点", "縮放控制點", "Resize handle", "サイズ変更ハンドル", "크기 조절 핸들") }
     var dropImageHint: String { text("从 Finder 拖入图片以放入或替换此格", "從 Finder 拖入圖片以放入或替換此格", "Drag an image from Finder to place or replace this cell", "Finderから画像をドラッグしてこの枠に追加または置換します", "Finder에서 이미지를 드래그하여 이 칸에 넣거나 교체합니다") }

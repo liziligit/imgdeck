@@ -178,7 +178,7 @@ final class ImageDeckViewModelTests: XCTestCase {
         viewModel.adjustPreviewZoom(by: -5)
         XCTAssertEqual(viewModel.previewZoomPercent, 100)
         viewModel.setPreviewZoomPercent(500)
-        XCTAssertEqual(viewModel.previewZoomPercent, 200)
+        XCTAssertEqual(viewModel.previewZoomPercent, 300)
         viewModel.setPreviewZoomPercent(1)
         XCTAssertEqual(viewModel.previewZoomPercent, 25)
     }

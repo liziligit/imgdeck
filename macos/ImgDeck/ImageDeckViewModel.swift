@@ -98,7 +98,7 @@ final class ImageDeckViewModel: ObservableObject {
     }
 
     func setPreviewZoomPercent(_ percent: Int) {
-        previewZoomPercent = min(max(percent, 25), 200)
+        previewZoomPercent = min(max(percent, 25), 300)
     }
 
     func setLanguage(_ language: AppLanguage) {

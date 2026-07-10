@@ -208,20 +208,20 @@ struct ContentView: View {
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
-                    .frame(height: 24)
+                    .controlSize(.small)
                     .disabled(viewModel.selectedID == nil)
 
                     Button(strings.resetImage, action: viewModel.resetSelectedTransform)
-                        .frame(height: 24)
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
                         .disabled(viewModel.selectedID == nil || viewModel.selectedTransform == .identity)
 
                     Button(action: viewModel.undoLastChange) {
                         Image(systemName: "arrow.counterclockwise")
-                            .frame(width: 38, height: 24)
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .frame(width: 38, height: 24)
+                    .frame(width: 38)
                     .contentShape(Rectangle())
                     .help(strings.undoHint)
                     .accessibilityLabel(strings.undoHint)
@@ -229,11 +229,10 @@ struct ContentView: View {
 
                     Button(action: viewModel.redoLastChange) {
                         Image(systemName: "arrow.clockwise")
-                            .frame(width: 38, height: 24)
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
-                    .frame(width: 38, height: 24)
+                    .frame(width: 38)
                     .contentShape(Rectangle())
                     .help(strings.redoHint)
                     .accessibilityLabel(strings.redoHint)
@@ -320,6 +319,10 @@ private struct A4Editor: View {
             let pageSize = fittedPageSize(in: geometry.size)
             let zoomScale = CGFloat(viewModel.previewZoomPercent) / 100
             let zoomedPageSize = CGSize(width: pageSize.width * zoomScale, height: pageSize.height * zoomScale)
+            let contentWidth = zoomedPageSize.width + 36
+            let contentHeight = zoomedPageSize.height + 36
+            let hPadding = max(0, (geometry.size.width - contentWidth) / 2)
+            let vPadding = max(0, (geometry.size.height - contentHeight) / 2)
             ZStack {
                 Color(nsColor: .darkGray).opacity(0.75)
                 ScrollView([.horizontal, .vertical]) {
@@ -329,11 +332,8 @@ private struct A4Editor: View {
                         .overlay(Rectangle().stroke(Color(nsColor: .separatorColor), lineWidth: 1))
                         .shadow(color: .black.opacity(0.22), radius: 8, y: 3)
                         .padding(18)
-                        .frame(
-                            minWidth: geometry.size.width,
-                            minHeight: geometry.size.height,
-                            alignment: .center
-                        )
+                        .padding(.horizontal, hPadding)
+                        .padding(.vertical, vPadding)
                 }
             }
         }
@@ -355,20 +355,19 @@ private struct PreviewZoomControl: View {
     @ObservedObject var viewModel: ImageDeckViewModel
     let strings: AppStrings
 
-    private let presets = [25, 50, 75, 100, 150, 200]
+    private let presets = [25, 50, 75, 100, 150, 200, 250, 300]
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 8) {
             Button(action: { viewModel.adjustPreviewZoom(by: -5) }) {
-                Image(systemName: "minus")
-                    .frame(width: 38, height: 24)
+                Text(strings.zoomOutLabel)
             }
             .help(strings.zoomOut)
             .accessibilityLabel(strings.zoomOut)
             .disabled(viewModel.previewZoomPercent <= 25)
             .buttonStyle(.bordered)
             .controlSize(.small)
-            .frame(width: 38, height: 24)
+            .frame(width: 76)
             .contentShape(Rectangle())
 
             Menu {
@@ -380,20 +379,19 @@ private struct PreviewZoomControl: View {
             } label: {
                 Text("\(viewModel.previewZoomPercent)%")
                     .monospacedDigit()
-                    .frame(width: 42, height: 24)
+                    .frame(width: 42)
             }
             .menuStyle(.borderlessButton)
 
             Button(action: { viewModel.adjustPreviewZoom(by: 5) }) {
-                Image(systemName: "plus")
-                    .frame(width: 38, height: 24)
+                Text(strings.zoomInLabel)
             }
             .help(strings.zoomIn)
             .accessibilityLabel(strings.zoomIn)
-            .disabled(viewModel.previewZoomPercent >= 200)
+            .disabled(viewModel.previewZoomPercent >= 300)
             .buttonStyle(.bordered)
             .controlSize(.small)
-            .frame(width: 38, height: 24)
+            .frame(width: 76)
             .contentShape(Rectangle())
         }
     }
