@@ -55,6 +55,16 @@ struct ImageTransform: Equatable {
     static let identity = ImageTransform()
 }
 
+struct MosaicRegion: Identifiable, Equatable {
+    let id: UUID
+    var normalizedRect: CGRect
+
+    init(id: UUID = UUID(), normalizedRect: CGRect) {
+        self.id = id
+        self.normalizedRect = normalizedRect
+    }
+}
+
 struct ImageItem: Identifiable, Equatable {
     let id: UUID
     let url: URL

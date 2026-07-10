@@ -76,8 +76,19 @@ struct AppStrings {
     var adjustImageAction: String { text("调整图片", "調整圖片", "Adjust Image", "画像を調整", "이미지 조정") }
     var changeScalingModeAction: String { text("更改拉伸方式", "更改拉伸方式", "Change Scaling Mode", "変形方法を変更", "변형 방식 변경") }
     var resetImageAction: String { text("重置图片", "重設圖片", "Reset Image", "画像をリセット", "이미지 재설정") }
+    var replaceImageAction: String { text("替换图片", "替換圖片", "Replace Image", "画像を置き換え", "이미지 교체") }
+    var rectangleMosaic: String { text("矩形马赛克", "矩形馬賽克", "Rectangle Mosaic", "矩形モザイク", "사각형 모자이크") }
+    var applyMosaic: String { text("应用马赛克", "套用馬賽克", "Apply Mosaic", "モザイクを適用", "모자이크 적용") }
+    var blockSize: String { text("块大小", "區塊大小", "Block Size", "ブロックサイズ", "블록 크기") }
+    var mosaicDrawingHint: String { text("在 A4 预览中拖动以画出矩形区域，然后点击“应用马赛克”。", "在 A4 預覽中拖動以畫出矩形區域，然後點擊「套用馬賽克」。", "Drag on the A4 preview to draw a rectangle, then click Apply Mosaic.", "A4プレビュー上をドラッグして矩形を描き、モザイクを適用します。", "A4 미리보기에서 사각형을 그린 뒤 모자이크 적용을 클릭하세요.") }
+    var fitPage: String { text("适应页面", "適應頁面", "Fit Page", "ページに合わせる", "페이지에 맞춤") }
+    var zoomIn: String { text("放大 5%", "放大 5%", "Zoom In 5%", "5%拡大", "5% 확대") }
+    var zoomOut: String { text("缩小 5%", "縮小 5%", "Zoom Out 5%", "5%縮小", "5% 축소") }
+    var addMosaicAction: String { text("添加马赛克", "加入馬賽克", "Add Mosaic", "モザイクを追加", "모자이크 추가") }
+    var changeMosaicBlockSizeAction: String { text("更改马赛克块大小", "更改馬賽克區塊大小", "Change Mosaic Block Size", "モザイクのブロックサイズを変更", "모자이크 블록 크기 변경") }
     var imageCell: String { text("图片格", "圖片格", "Image cell", "画像枠", "이미지 칸") }
     var resizeHandle: String { text("缩放控制点", "縮放控制點", "Resize handle", "サイズ変更ハンドル", "크기 조절 핸들") }
+    var dropImageHint: String { text("从 Finder 拖入图片以放入或替换此格", "從 Finder 拖入圖片以放入或替換此格", "Drag an image from Finder to place or replace this cell", "Finderから画像をドラッグしてこの枠に追加または置換します", "Finder에서 이미지를 드래그하여 이 칸에 넣거나 교체합니다") }
 
     func selectedPath(_ path: String) -> String {
         switch language {
@@ -226,7 +237,11 @@ struct AppStrings {
                 "Selected image: None": "Imagen seleccionada: ninguna", "Keep Aspect Ratio": "Mantener proporción", "Free Transform": "Transformación libre",
                 "Reset Image": "Restablecer imagen", "Undo the last adjustment (⌘Z)": "Deshacer el último ajuste (⌘Z)", "Redo the last adjustment (⇧⌘Z)": "Rehacer el último ajuste (⇧⌘Z)",
                 "Drag an image to reposition it and drag handles to resize. Content outside the blue dashed line is not exported.": "Arrastra una imagen para cambiar su posición y los controladores para redimensionarla. El contenido fuera de la línea azul discontinua no se exporta.",
-                "Adjust Image": "Ajustar imagen", "Change Scaling Mode": "Cambiar modo de escala", "Image cell": "Celda de imagen", "Resize handle": "Controlador de tamaño",
+                "Adjust Image": "Ajustar imagen", "Change Scaling Mode": "Cambiar modo de escala", "Replace Image": "Reemplazar imagen", "Image cell": "Celda de imagen", "Resize handle": "Controlador de tamaño",
+                "Drag an image from Finder to place or replace this cell": "Arrastra una imagen desde Finder para colocarla o reemplazar esta celda",
+                "Rectangle Mosaic": "Mosaico rectangular", "Block Size": "Tamaño del bloque", "Drag on the A4 preview to add a rectangular mosaic.": "Arrastra sobre la vista previa A4 para añadir un mosaico rectangular.",
+                "Apply Mosaic": "Aplicar mosaico", "Drag on the A4 preview to draw a rectangle, then click Apply Mosaic.": "Arrastra sobre la vista previa A4 para dibujar un rectángulo y luego pulsa Aplicar mosaico.",
+                "Fit Page": "Ajustar a la página", "Zoom In 5%": "Ampliar 5%", "Zoom Out 5%": "Reducir 5%", "Add Mosaic": "Añadir mosaico", "Change Mosaic Block Size": "Cambiar tamaño del bloque de mosaico",
                 "Dots per inch": "Puntos por pulgada", "Dots per centimeter": "Puntos por centímetro", "Choose images and a layout": "Elige imágenes y un diseño",
                 "Image Limit Reached": "Límite de imágenes alcanzado", "You can select up to 9 images.": "Puedes seleccionar hasta 9 imágenes.", "Choose Images": "Elegir imágenes",
                 "Too Many Images": "Demasiadas imágenes", "Resolution changed. The current preview is unchanged; click Preview to apply the new size.": "La resolución ha cambiado. La vista previa actual no cambia; haz clic en Vista previa para aplicar el nuevo tamaño.",
@@ -246,7 +261,11 @@ struct AppStrings {
                 "Keep Aspect Ratio": "Conserver les proportions", "Free Transform": "Transformation libre", "Reset Image": "Réinitialiser l’image",
                 "Undo the last adjustment (⌘Z)": "Annuler le dernier réglage (⌘Z)", "Redo the last adjustment (⇧⌘Z)": "Rétablir le dernier réglage (⇧⌘Z)",
                 "Drag an image to reposition it and drag handles to resize. Content outside the blue dashed line is not exported.": "Faites glisser une image pour la repositionner et les poignées pour la redimensionner. Le contenu hors de la ligne bleue en pointillés n’est pas exporté.",
-                "Adjust Image": "Ajuster l’image", "Change Scaling Mode": "Changer le mode de mise à l’échelle", "Image cell": "Case d’image", "Resize handle": "Poignée de redimensionnement",
+                "Adjust Image": "Ajuster l’image", "Change Scaling Mode": "Changer le mode de mise à l’échelle", "Replace Image": "Remplacer l’image", "Image cell": "Case d’image", "Resize handle": "Poignée de redimensionnement",
+                "Drag an image from Finder to place or replace this cell": "Faites glisser une image depuis Finder pour placer ou remplacer cette case",
+                "Rectangle Mosaic": "Mosaïque rectangulaire", "Block Size": "Taille du bloc", "Drag on the A4 preview to add a rectangular mosaic.": "Faites glisser sur l’aperçu A4 pour ajouter une mosaïque rectangulaire.",
+                "Apply Mosaic": "Appliquer la mosaïque", "Drag on the A4 preview to draw a rectangle, then click Apply Mosaic.": "Faites glisser sur l’aperçu A4 pour dessiner un rectangle, puis cliquez sur Appliquer la mosaïque.",
+                "Fit Page": "Ajuster à la page", "Zoom In 5%": "Agrandir de 5%", "Zoom Out 5%": "Réduire de 5%", "Add Mosaic": "Ajouter une mosaïque", "Change Mosaic Block Size": "Modifier la taille du bloc de mosaïque",
                 "Dots per inch": "Points par pouce", "Dots per centimeter": "Points par centimètre", "Choose images and a layout": "Choisissez des images et une disposition",
                 "Image Limit Reached": "Limite d’images atteinte", "You can select up to 9 images.": "Vous pouvez sélectionner jusqu’à 9 images.", "Choose Images": "Choisir des images", "Too Many Images": "Trop d’images",
                 "Resolution changed. The current preview is unchanged; click Preview to apply the new size.": "La résolution a changé. L’aperçu actuel reste inchangé ; cliquez sur Aperçu pour appliquer la nouvelle taille.",
@@ -265,7 +284,11 @@ struct AppStrings {
                 "Keep Aspect Ratio": "Seitenverhältnis beibehalten", "Free Transform": "Frei transformieren", "Reset Image": "Bild zurücksetzen",
                 "Undo the last adjustment (⌘Z)": "Letzte Anpassung rückgängig machen (⌘Z)", "Redo the last adjustment (⇧⌘Z)": "Letzte Anpassung wiederholen (⇧⌘Z)",
                 "Drag an image to reposition it and drag handles to resize. Content outside the blue dashed line is not exported.": "Ziehe ein Bild zum Verschieben und die Griffe zum Ändern der Größe. Inhalte außerhalb der blauen gestrichelten Linie werden nicht exportiert.",
-                "Adjust Image": "Bild anpassen", "Change Scaling Mode": "Skalierungsmodus ändern", "Image cell": "Bildfeld", "Resize handle": "Größenänderungsgriff",
+                "Adjust Image": "Bild anpassen", "Change Scaling Mode": "Skalierungsmodus ändern", "Replace Image": "Bild ersetzen", "Image cell": "Bildfeld", "Resize handle": "Größenänderungsgriff",
+                "Drag an image from Finder to place or replace this cell": "Ziehe ein Bild aus dem Finder hierher, um dieses Feld zu füllen oder zu ersetzen",
+                "Rectangle Mosaic": "Rechteckmosaik", "Block Size": "Blockgröße", "Drag on the A4 preview to add a rectangular mosaic.": "Ziehe im A4-Vorschaubereich, um ein rechteckiges Mosaik hinzuzufügen.",
+                "Apply Mosaic": "Mosaik anwenden", "Drag on the A4 preview to draw a rectangle, then click Apply Mosaic.": "Ziehe in der A4-Vorschau ein Rechteck und klicke dann auf Mosaik anwenden.",
+                "Fit Page": "An Seite anpassen", "Zoom In 5%": "Um 5% vergrößern", "Zoom Out 5%": "Um 5% verkleinern", "Add Mosaic": "Mosaik hinzufügen", "Change Mosaic Block Size": "Mosaikblockgröße ändern",
                 "Dots per inch": "Punkte pro Zoll", "Dots per centimeter": "Punkte pro Zentimeter", "Choose images and a layout": "Bilder und Layout auswählen",
                 "Image Limit Reached": "Bildlimit erreicht", "You can select up to 9 images.": "Du kannst bis zu 9 Bilder auswählen.", "Choose Images": "Bilder auswählen", "Too Many Images": "Zu viele Bilder",
                 "Resolution changed. The current preview is unchanged; click Preview to apply the new size.": "Die Auflösung wurde geändert. Die aktuelle Vorschau bleibt unverändert; klicke auf Vorschau, um die neue Größe anzuwenden.",
@@ -284,7 +307,11 @@ struct AppStrings {
                 "Keep Aspect Ratio": "Manter proporção", "Free Transform": "Transformação livre", "Reset Image": "Redefinir imagem",
                 "Undo the last adjustment (⌘Z)": "Desfazer o último ajuste (⌘Z)", "Redo the last adjustment (⇧⌘Z)": "Refazer o último ajuste (⇧⌘Z)",
                 "Drag an image to reposition it and drag handles to resize. Content outside the blue dashed line is not exported.": "Arraste uma imagem para reposicioná-la e as alças para redimensioná-la. O conteúdo fora da linha azul tracejada não será exportado.",
-                "Adjust Image": "Ajustar imagem", "Change Scaling Mode": "Alterar modo de escala", "Image cell": "Espaço da imagem", "Resize handle": "Alça de redimensionamento",
+                "Adjust Image": "Ajustar imagem", "Change Scaling Mode": "Alterar modo de escala", "Replace Image": "Substituir imagem", "Image cell": "Espaço da imagem", "Resize handle": "Alça de redimensionamento",
+                "Drag an image from Finder to place or replace this cell": "Arraste uma imagem do Finder para inserir ou substituir este espaço",
+                "Rectangle Mosaic": "Mosaico retangular", "Block Size": "Tamanho do bloco", "Drag on the A4 preview to add a rectangular mosaic.": "Arraste na prévia A4 para adicionar um mosaico retangular.",
+                "Apply Mosaic": "Aplicar mosaico", "Drag on the A4 preview to draw a rectangle, then click Apply Mosaic.": "Arraste na prévia A4 para desenhar um retângulo e clique em Aplicar mosaico.",
+                "Fit Page": "Ajustar à página", "Zoom In 5%": "Ampliar 5%", "Zoom Out 5%": "Reduzir 5%", "Add Mosaic": "Adicionar mosaico", "Change Mosaic Block Size": "Alterar tamanho do bloco de mosaico",
                 "Dots per inch": "Pontos por polegada", "Dots per centimeter": "Pontos por centímetro", "Choose images and a layout": "Escolha imagens e um layout",
                 "Image Limit Reached": "Limite de imagens atingido", "You can select up to 9 images.": "Você pode selecionar até 9 imagens.", "Choose Images": "Escolher imagens", "Too Many Images": "Imagens demais",
                 "Resolution changed. The current preview is unchanged; click Preview to apply the new size.": "A resolução foi alterada. A prévia atual permanece igual; clique em Prévia para aplicar o novo tamanho.",

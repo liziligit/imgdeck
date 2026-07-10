@@ -7,6 +7,8 @@ enum PageRenderer {
     static func render(
         imageURLs: [URL?],
         transforms: [ImageTransform] = [],
+        mosaics: [MosaicRegion] = [],
+        mosaicBlockSize: Int = 40,
         layout: LayoutOption,
         width: Int,
         height: Int
@@ -23,22 +25,42 @@ enum PageRenderer {
             }
             return image
         }
-        return try render(imageSlots: images, transforms: transforms, layout: layout, width: width, height: height)
+        return try render(
+            imageSlots: images,
+            transforms: transforms,
+            mosaics: mosaics,
+            mosaicBlockSize: mosaicBlockSize,
+            layout: layout,
+            width: width,
+            height: height
+        )
     }
 
     static func render(
         images: [CGImage],
         transforms: [ImageTransform] = [],
+        mosaics: [MosaicRegion] = [],
+        mosaicBlockSize: Int = 40,
         layout: LayoutOption,
         width: Int,
         height: Int
     ) throws -> CGImage {
-        try render(imageSlots: images.map(Optional.some), transforms: transforms, layout: layout, width: width, height: height)
+        try render(
+            imageSlots: images.map(Optional.some),
+            transforms: transforms,
+            mosaics: mosaics,
+            mosaicBlockSize: mosaicBlockSize,
+            layout: layout,
+            width: width,
+            height: height
+        )
     }
 
     static func render(
         imageSlots: [CGImage?],
         transforms: [ImageTransform] = [],
+        mosaics: [MosaicRegion] = [],
+        mosaicBlockSize: Int = 40,
         layout: LayoutOption,
         width: Int,
         height: Int
@@ -95,7 +117,7 @@ enum PageRenderer {
         guard let result = context.makeImage() else {
             throw ImgDeckError.contextCreationFailed
         }
-        return result
+        return applyMosaics(to: result, regions: mosaics, blockSize: mosaicBlockSize)
     }
 
     static func encodedData(for image: CGImage, format: OutputFormat) throws -> Data {
@@ -132,5 +154,64 @@ enum PageRenderer {
             kCGImageSourceShouldCacheImmediately: true,
         ] as CFDictionary
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options)
+    }
+
+    private static func applyMosaics(to image: CGImage, regions: [MosaicRegion], blockSize: Int) -> CGImage {
+        guard !regions.isEmpty,
+              let context = CGContext(
+                data: nil,
+                width: image.width,
+                height: image.height,
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              ) else { return image }
+
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        let fullRect = CGRect(x: 0, y: 0, width: image.width, height: image.height)
+        let scaledBlockSize = max(2, Int((CGFloat(blockSize.clamped(to: 2...100)) * CGFloat(image.width) / 595).rounded()))
+
+        for region in regions {
+            let normalized = region.normalizedRect.standardized.intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
+            guard !normalized.isNull, !normalized.isEmpty else { continue }
+            let rect = CGRect(
+                x: normalized.minX * CGFloat(image.width),
+                y: (1 - normalized.maxY) * CGFloat(image.height),
+                width: normalized.width * CGFloat(image.width),
+                height: normalized.height * CGFloat(image.height)
+            ).integral.intersection(fullRect)
+            guard !rect.isNull, !rect.isEmpty,
+                  let crop = image.cropping(to: rect) else { continue }
+
+            let sampledWidth = max(1, Int(ceil(rect.width / CGFloat(scaledBlockSize))))
+            let sampledHeight = max(1, Int(ceil(rect.height / CGFloat(scaledBlockSize))))
+            guard let sampledContext = CGContext(
+                data: nil,
+                width: sampledWidth,
+                height: sampledHeight,
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ) else { continue }
+            sampledContext.interpolationQuality = .medium
+            sampledContext.draw(crop, in: CGRect(x: 0, y: 0, width: sampledWidth, height: sampledHeight))
+            guard let sampledImage = sampledContext.makeImage() else { continue }
+
+            context.saveGState()
+            context.clip(to: rect)
+            context.interpolationQuality = .none
+            context.draw(sampledImage, in: rect)
+            context.restoreGState()
+        }
+
+        return context.makeImage() ?? image
+    }
+}
+
+private extension Comparable {
+    func clamped(to range: ClosedRange<Self>) -> Self {
+        min(max(self, range.lowerBound), range.upperBound)
     }
 }

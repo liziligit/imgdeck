@@ -1,9 +1,11 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @StateObject private var viewModel = ImageDeckViewModel()
     @AppStorage(AppLanguage.storageKey) private var language: AppLanguage = .simplifiedChinese
     @Environment(\.undoManager) private var undoManager
+    @State private var mosaicBlockSizeStart: Int?
 
     private var strings: AppStrings { AppStrings(language: language) }
 
@@ -55,7 +57,7 @@ struct ContentView: View {
     private var controls: some View {
         GroupBox(strings.imagesAndLayout(remaining: viewModel.remainingCapacity)) {
             VStack(spacing: 10) {
-                List(selection: $viewModel.selectedID) {
+                List(selection: $viewModel.selectedSlotIndex) {
                     ForEach(0..<9, id: \.self) { index in
                         Group {
                             if let item = viewModel.slots[index] {
@@ -67,7 +69,6 @@ struct ContentView: View {
                                         .lineLimit(1)
                                     Spacer(minLength: 0)
                                 }
-                                .tag(item.id)
                                 .help(item.url.path)
                             } else {
                                 HStack(spacing: 4) {
@@ -77,6 +78,7 @@ struct ContentView: View {
                                 }
                             }
                         }
+                        .tag(index)
                         .frame(maxWidth: .infinity, minHeight: 25, maxHeight: 25, alignment: .leading)
                         .overlay(alignment: .top) {
                             if index == 0 {
@@ -226,9 +228,47 @@ struct ContentView: View {
                     .disabled(!viewModel.canRedo)
                 }
 
-                Text(strings.editImageHint)
+                HStack(spacing: 4) {
+                    PreviewZoomControl(viewModel: viewModel, strings: strings)
+                    Button(strings.rectangleMosaic, action: viewModel.toggleMosaicMode)
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .tint(viewModel.isAddingMosaic ? .accentColor : nil)
+                    Button(strings.applyMosaic, action: viewModel.applyPendingMosaic)
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                        .disabled(!viewModel.canApplyMosaic)
+                    Text(strings.blockSize)
+                    Slider(
+                        value: Binding(
+                            get: { Double(viewModel.mosaicBlockSize) },
+                            set: { viewModel.updateMosaicBlockSize(Int($0.rounded())) }
+                        ),
+                        in: 2...100,
+                        step: 1,
+                        onEditingChanged: { isEditing in
+                            if isEditing {
+                                mosaicBlockSizeStart = viewModel.mosaicBlockSize
+                            } else if let oldValue = mosaicBlockSizeStart {
+                                viewModel.commitMosaicBlockSizeChange(from: oldValue)
+                                mosaicBlockSizeStart = nil
+                            }
+                        }
+                    )
+                    .frame(width: 70)
+                    Text("\(viewModel.mosaicBlockSize)")
+                        .monospacedDigit()
+                        .frame(width: 32)
+                        .padding(.vertical, 3)
+                        .background(Color(nsColor: .textBackgroundColor))
+                        .clipShape(RoundedRectangle(cornerRadius: 5))
+                        .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.accentColor, lineWidth: 2))
+                }
+
+                Text(viewModel.isAddingMosaic ? "\(strings.editImageHint) \(strings.mosaicDrawingHint)" : strings.editImageHint)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(viewModel.isAddingMosaic ? Color.accentColor : .secondary)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 A4Editor(viewModel: viewModel, strings: strings)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -302,13 +342,23 @@ private struct A4Editor: View {
     var body: some View {
         GeometryReader { geometry in
             let pageSize = fittedPageSize(in: geometry.size)
+            let zoomScale = CGFloat(viewModel.previewZoomPercent) / 100
+            let zoomedPageSize = CGSize(width: pageSize.width * zoomScale, height: pageSize.height * zoomScale)
             ZStack {
                 Color(nsColor: .darkGray).opacity(0.75)
-                PageEditorCanvas(viewModel: viewModel, strings: strings)
-                .frame(width: pageSize.width, height: pageSize.height)
-                .background(.white)
-                .overlay(Rectangle().stroke(Color(nsColor: .separatorColor), lineWidth: 1))
-                .shadow(color: .black.opacity(0.22), radius: 8, y: 3)
+                ScrollView([.horizontal, .vertical]) {
+                    PageEditorCanvas(viewModel: viewModel, strings: strings)
+                        .frame(width: zoomedPageSize.width, height: zoomedPageSize.height)
+                        .background(.white)
+                        .overlay(Rectangle().stroke(Color(nsColor: .separatorColor), lineWidth: 1))
+                        .shadow(color: .black.opacity(0.22), radius: 8, y: 3)
+                        .padding(18)
+                        .frame(
+                            minWidth: geometry.size.width,
+                            minHeight: geometry.size.height,
+                            alignment: .center
+                        )
+                }
             }
         }
         .accessibilityLabel(viewModel.imageCount == 0 ? strings.blankPreview : strings.resultPreview)
@@ -325,9 +375,52 @@ private struct A4Editor: View {
     }
 }
 
+private struct PreviewZoomControl: View {
+    @ObservedObject var viewModel: ImageDeckViewModel
+    let strings: AppStrings
+
+    private let presets = [25, 50, 75, 100, 150, 200]
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button(action: { viewModel.adjustPreviewZoom(by: -5) }) {
+                Image(systemName: "minus")
+            }
+            .help(strings.zoomOut)
+            .accessibilityLabel(strings.zoomOut)
+            .disabled(viewModel.previewZoomPercent <= 25)
+
+            Menu {
+                Button(strings.fitPage) { viewModel.setPreviewZoomPercent(100) }
+                Divider()
+                ForEach(presets, id: \.self) { percent in
+                    Button("\(percent)%") { viewModel.setPreviewZoomPercent(percent) }
+                }
+            } label: {
+                Text("\(viewModel.previewZoomPercent)%")
+                    .monospacedDigit()
+                    .frame(minWidth: 48)
+            }
+            .menuStyle(.borderlessButton)
+
+            Button(action: { viewModel.adjustPreviewZoom(by: 5) }) {
+                Image(systemName: "plus")
+            }
+            .help(strings.zoomIn)
+            .accessibilityLabel(strings.zoomIn)
+            .disabled(viewModel.previewZoomPercent >= 200)
+        }
+        .buttonStyle(.bordered)
+        .controlSize(.small)
+    }
+}
+
 private struct PageEditorCanvas: View {
     @ObservedObject var viewModel: ImageDeckViewModel
     let strings: AppStrings
+    @State private var dropTargetIndex: Int?
+    @State private var mosaicStart: CGPoint?
+    @State private var mosaicCurrent: CGPoint?
 
     var body: some View {
         GeometryReader { geometry in
@@ -335,8 +428,18 @@ private struct PageEditorCanvas: View {
                 width: geometry.size.width / CGFloat(viewModel.selectedLayout.columns),
                 height: geometry.size.height / CGFloat(viewModel.selectedLayout.rows)
             )
+            let renderedPage = viewModel.mosaicRegions.isEmpty ? nil : viewModel.editorPreviewImage(
+                width: max(1, Int(geometry.size.width.rounded())),
+                height: max(1, Int(geometry.size.height.rounded()))
+            )
             ZStack(alignment: .topLeading) {
                 Color.white
+                if let renderedPage {
+                    Image(nsImage: renderedPage)
+                        .resizable()
+                        .interpolation(.none)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                }
                 ForEach(0..<viewModel.selectedLayout.capacity, id: \.self) { index in
                     let row = index / viewModel.selectedLayout.columns
                     let column = index % viewModel.selectedLayout.columns
@@ -346,10 +449,13 @@ private struct PageEditorCanvas: View {
                         item: item,
                         image: item.flatMap(viewModel.image),
                         transform: item.map { viewModel.transform(for: $0.id) } ?? .identity,
-                        isSelected: item?.id == viewModel.selectedID,
+                        showsImage: renderedPage == nil,
+                        isSelected: viewModel.selectedSlotIndex == index,
+                        isDropTarget: dropTargetIndex == index,
+                        isAddingMosaic: viewModel.isAddingMosaic,
                         cellSize: cellSize,
                         strings: strings,
-                        select: { viewModel.selectedID = item?.id },
+                        select: { viewModel.selectSlot(index) },
                         update: { transform in
                             guard let id = item?.id else { return }
                             viewModel.updateTransform(transform, for: id)
@@ -364,10 +470,154 @@ private struct PageEditorCanvas: View {
                         x: cellSize.width * (CGFloat(column) + 0.5),
                         y: cellSize.height * (CGFloat(row) + 0.5)
                     )
-                    .zIndex(item?.id == viewModel.selectedID ? 1 : 0)
+                    .zIndex(viewModel.selectedSlotIndex == index ? 1 : 0)
+                }
+                if let mosaicStart, let mosaicCurrent {
+                    mosaicOutline(
+                        for: normalizedRect(from: mosaicStart, to: mosaicCurrent, in: geometry.size),
+                        in: geometry.size,
+                        color: .accentColor
+                    )
+                }
+                if let pendingMosaicRect = viewModel.pendingMosaicRect {
+                    mosaicOutline(for: pendingMosaicRect, in: geometry.size, color: .accentColor)
                 }
             }
+            .contentShape(Rectangle())
+            .simultaneousGesture(mosaicGesture(in: geometry.size))
+            .onDrop(of: [.fileURL], delegate: CanvasImageDropDelegate(
+                grid: PreviewGridDropTarget(
+                    cellSize: cellSize,
+                    columns: viewModel.selectedLayout.columns,
+                    capacity: viewModel.selectedLayout.capacity
+                ),
+                targetIndex: $dropTargetIndex,
+                handleDrop: replaceDroppedImage
+            ))
         }
+    }
+
+    private func replaceDroppedImage(at index: Int, providers: [NSItemProvider]) -> Bool {
+        dropTargetIndex = nil
+        guard let provider = providers.first else { return false }
+        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+            let resolvedURL: URL?
+            if let itemURL = item as? URL {
+                resolvedURL = itemURL
+            } else if let data = item as? Data {
+                resolvedURL = URL(dataRepresentation: data, relativeTo: nil)
+            } else {
+                resolvedURL = nil
+            }
+            guard let resolvedURL,
+                  let type = UTType(filenameExtension: resolvedURL.pathExtension),
+                  type.conforms(to: .image) else { return }
+            Task { @MainActor in
+                _ = viewModel.replaceImage(at: index, with: resolvedURL)
+                dropTargetIndex = nil
+            }
+        }
+        return true
+    }
+
+    private func mosaicGesture(in size: CGSize) -> some Gesture {
+        DragGesture(minimumDistance: 2)
+            .onChanged { value in
+                guard viewModel.isAddingMosaic else { return }
+                mosaicStart = mosaicStart ?? value.startLocation
+                mosaicCurrent = value.location
+            }
+            .onEnded { value in
+                guard viewModel.isAddingMosaic, let mosaicStart else { return }
+                let rect = normalizedRect(from: mosaicStart, to: value.location, in: size)
+                self.mosaicStart = nil
+                mosaicCurrent = nil
+                viewModel.setPendingMosaic(rect)
+            }
+    }
+
+    private func normalizedRect(from start: CGPoint, to end: CGPoint, in size: CGSize) -> CGRect {
+        let x1 = min(max(start.x, 0), size.width)
+        let x2 = min(max(end.x, 0), size.width)
+        let y1 = min(max(start.y, 0), size.height)
+        let y2 = min(max(end.y, 0), size.height)
+        return CGRect(
+            x: min(x1, x2) / max(size.width, 1),
+            y: min(y1, y2) / max(size.height, 1),
+            width: abs(x2 - x1) / max(size.width, 1),
+            height: abs(y2 - y1) / max(size.height, 1)
+        )
+    }
+
+    @ViewBuilder
+    private func mosaicOutline(for rect: CGRect, in size: CGSize, color: Color) -> some View {
+        Rectangle()
+            .fill(color.opacity(0.08))
+            .overlay(Rectangle().stroke(color, style: StrokeStyle(lineWidth: 2, dash: [5, 3])))
+            .frame(width: rect.width * size.width, height: rect.height * size.height)
+            .position(
+                x: (rect.minX + rect.width / 2) * size.width,
+                y: (rect.minY + rect.height / 2) * size.height
+            )
+            .allowsHitTesting(false)
+    }
+}
+
+struct PreviewGridDropTarget {
+    let cellSize: CGSize
+    let columns: Int
+    let capacity: Int
+
+    func cellIndex(for location: CGPoint) -> Int? {
+        guard location.x >= 0, location.y >= 0,
+              cellSize.width > 0, cellSize.height > 0 else { return nil }
+        let column = Int(location.x / cellSize.width)
+        let row = Int(location.y / cellSize.height)
+        guard column >= 0, column < columns else { return nil }
+        let index = row * columns + column
+        return index < capacity ? index : nil
+    }
+}
+
+private struct CanvasImageDropDelegate: DropDelegate {
+    let grid: PreviewGridDropTarget
+    @Binding var targetIndex: Int?
+    let handleDrop: (Int, [NSItemProvider]) -> Bool
+
+    func validateDrop(info: DropInfo) -> Bool {
+        guard info.hasItemsConforming(to: [UTType.fileURL.identifier]) else {
+            targetIndex = nil
+            return false
+        }
+        updateTarget(for: info.location)
+        return targetIndex != nil
+    }
+
+    func dropEntered(info: DropInfo) {
+        updateTarget(for: info.location)
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        updateTarget(for: info.location)
+        return targetIndex == nil ? nil : DropProposal(operation: .copy)
+    }
+
+    func dropExited(info: DropInfo) {
+        targetIndex = nil
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        defer { targetIndex = nil }
+        guard let index = cellIndex(for: info.location) else { return false }
+        return handleDrop(index, info.itemProviders(for: [UTType.fileURL.identifier]))
+    }
+
+    private func updateTarget(for location: CGPoint) {
+        targetIndex = cellIndex(for: location)
+    }
+
+    private func cellIndex(for location: CGPoint) -> Int? {
+        grid.cellIndex(for: location)
     }
 }
 
@@ -376,7 +626,10 @@ private struct EditableImageCell: View {
     let item: ImageItem?
     let image: NSImage?
     let transform: ImageTransform
+    let showsImage: Bool
     let isSelected: Bool
+    let isDropTarget: Bool
+    let isAddingMosaic: Bool
     let cellSize: CGSize
     let strings: AppStrings
     let select: () -> Void
@@ -388,8 +641,8 @@ private struct EditableImageCell: View {
     var body: some View {
         let baseSize = fittedImageSize(image?.size ?? .zero, in: cellSize)
         ZStack {
-            Color.white
-            if let image {
+            showsImage ? Color.white : Color.clear
+            if let image, showsImage {
                 Image(nsImage: image)
                     .resizable()
                     .interpolation(.high)
@@ -401,7 +654,7 @@ private struct EditableImageCell: View {
                         x: cellSize.width / 2 + transform.offsetX * cellSize.width,
                         y: cellSize.height / 2 + transform.offsetY * cellSize.height
                     )
-            } else {
+            } else if showsImage {
                 Text("\(index + 1)")
                     .font(.system(size: 88, weight: .bold))
                     .foregroundStyle(.secondary)
@@ -410,6 +663,7 @@ private struct EditableImageCell: View {
         .frame(width: cellSize.width, height: cellSize.height)
         .clipped()
         .contentShape(Rectangle())
+        .allowsHitTesting(!isAddingMosaic)
         .onTapGesture(perform: select)
         .gesture(
             DragGesture(minimumDistance: 2)
@@ -434,6 +688,11 @@ private struct EditableImageCell: View {
             Rectangle()
                 .stroke(Color.blue.opacity(0.9), style: StrokeStyle(lineWidth: isSelected ? 1.5 : 1, dash: [5, 4]))
                 .allowsHitTesting(false)
+            if isDropTarget {
+                Rectangle()
+                    .stroke(Color.blue, lineWidth: 4)
+                    .allowsHitTesting(false)
+            }
             if isSelected, image != nil {
                 SelectionHandles(
                     transform: transform,
@@ -446,6 +705,7 @@ private struct EditableImageCell: View {
             }
         }
         .accessibilityLabel("\(strings.imageCell) \(index + 1)")
+        .accessibilityHint(strings.dropImageHint)
     }
 
     private func fittedImageSize(_ imageSize: CGSize, in cellSize: CGSize) -> CGSize {
