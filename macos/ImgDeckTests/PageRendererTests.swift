@@ -97,28 +97,6 @@ final class PageRendererTests: XCTestCase {
         XCTAssertNotEqual(free.scaleX, free.scaleY)
     }
 
-    func testRectangularMosaicPixelatesOnlyItsSelectedArea() throws {
-        let source = try makeCheckerboardImage(width: 100, height: 100, tileSize: 2)
-        let plain = try PageRenderer.render(
-            images: [source],
-            layout: LayoutOption(id: "1x1", rows: 1, columns: 1),
-            width: 100,
-            height: 100
-        )
-        let mosaicked = try PageRenderer.render(
-            images: [source],
-            mosaics: [MosaicRegion(normalizedRect: CGRect(x: 0, y: 0, width: 0.5, height: 0.5))],
-            mosaicBlockSize: 50,
-            layout: LayoutOption(id: "1x1", rows: 1, columns: 1),
-            width: 100,
-            height: 100
-        )
-
-        XCTAssertNotEqual(pixel(in: plain, x: 1, y: 1), pixel(in: plain, x: 3, y: 1))
-        XCTAssertEqual(pixel(in: mosaicked, x: 1, y: 1), pixel(in: mosaicked, x: 3, y: 1))
-        XCTAssertEqual(pixel(in: mosaicked, x: 75, y: 75), pixel(in: plain, x: 75, y: 75))
-    }
-
     func testEncodesPNGAndJPEG() throws {
         let image = try makeCGImage(width: 50, height: 50, gray: 100)
         XCTAssertGreaterThan(try PageRenderer.encodedData(for: image, format: .png).count, 0)
@@ -178,30 +156,6 @@ final class PageRendererTests: XCTestCase {
         return image
     }
 
-    private func makeCheckerboardImage(width: Int, height: Int, tileSize: Int) throws -> CGImage {
-        guard let context = CGContext(
-            data: nil,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: 0,
-            space: CGColorSpaceCreateDeviceRGB(),
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else {
-            throw ImgDeckError.contextCreationFailed
-        }
-        for y in stride(from: 0, to: height, by: tileSize) {
-            for x in stride(from: 0, to: width, by: tileSize) {
-                let isDark = ((x / tileSize) + (y / tileSize)).isMultiple(of: 2)
-                let value: CGFloat = isDark ? 0 : 1
-                context.setFillColor(CGColor(red: value, green: value, blue: value, alpha: 1))
-                context.fill(CGRect(x: x, y: y, width: tileSize, height: tileSize))
-            }
-        }
-        guard let image = context.makeImage() else { throw ImgDeckError.contextCreationFailed }
-        return image
-    }
-
     private func pixel(in image: CGImage, x: Int, y: Int) -> UInt8 {
         guard let data = image.dataProvider?.data, let bytes = CFDataGetBytePtr(data) else { return 0 }
         let offset = y * image.bytesPerRow + x * 4
@@ -227,42 +181,6 @@ final class ImageDeckViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.previewZoomPercent, 200)
         viewModel.setPreviewZoomPercent(1)
         XCTAssertEqual(viewModel.previewZoomPercent, 25)
-    }
-
-    func testMosaicAdditionAndBlockSizeSupportUndoRedo() {
-        let viewModel = ImageDeckViewModel()
-        let undoManager = UndoManager()
-        viewModel.setUndoManager(undoManager)
-
-        XCTAssertFalse(viewModel.canApplyMosaic)
-        viewModel.setPendingMosaic(CGRect(x: 0.1, y: 0.2, width: 0.3, height: 0.4))
-        XCTAssertTrue(viewModel.canApplyMosaic)
-        XCTAssertTrue(viewModel.mosaicRegions.isEmpty)
-        viewModel.applyPendingMosaic()
-        XCTAssertFalse(viewModel.canApplyMosaic)
-        XCTAssertEqual(viewModel.mosaicRegions.count, 1)
-
-        viewModel.toggleMosaicMode()
-        viewModel.setPendingMosaic(CGRect(x: 0.5, y: 0.5, width: 0.2, height: 0.2))
-        XCTAssertTrue(viewModel.canApplyMosaic)
-        viewModel.toggleMosaicMode()
-        XCTAssertFalse(viewModel.canApplyMosaic)
-        XCTAssertEqual(viewModel.mosaicRegions.count, 1)
-
-        undoManager.undo()
-        XCTAssertTrue(viewModel.mosaicRegions.isEmpty)
-        XCTAssertTrue(viewModel.canApplyMosaic)
-        undoManager.redo()
-        XCTAssertEqual(viewModel.mosaicRegions.count, 1)
-
-        XCTAssertEqual(viewModel.mosaicBlockSize, 15)
-        viewModel.updateMosaicBlockSize(60)
-        viewModel.commitMosaicBlockSizeChange(from: 15)
-        XCTAssertEqual(viewModel.mosaicBlockSize, 60)
-        undoManager.undo()
-        XCTAssertEqual(viewModel.mosaicBlockSize, 15)
-        undoManager.redo()
-        XCTAssertEqual(viewModel.mosaicBlockSize, 60)
     }
 
     func testMovingIntoEmptySlotAndOccupiedSlot() {

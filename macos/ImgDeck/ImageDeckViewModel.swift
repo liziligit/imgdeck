@@ -22,10 +22,6 @@ final class ImageDeckViewModel: ObservableObject {
     @Published var alert: AlertMessage?
     @Published var isRendering = false
     @Published private(set) var imageTransforms: [ImageItem.ID: ImageTransform] = [:]
-    @Published private(set) var mosaicRegions: [MosaicRegion] = []
-    @Published private(set) var mosaicBlockSize = 15
-    @Published private(set) var pendingMosaicRect: CGRect?
-    @Published var isAddingMosaic = false
     @Published private(set) var canUndo = false
     @Published private(set) var canRedo = false
 
@@ -82,7 +78,6 @@ final class ImageDeckViewModel: ObservableObject {
 
     var canRemove: Bool { selectedIndex != nil }
     var canSave: Bool { !items.isEmpty }
-    var canApplyMosaic: Bool { pendingMosaicRect != nil }
 
     var selectedTransform: ImageTransform? {
         guard let selectedID else { return nil }
@@ -104,62 +99,6 @@ final class ImageDeckViewModel: ObservableObject {
 
     func setPreviewZoomPercent(_ percent: Int) {
         previewZoomPercent = min(max(percent, 25), 200)
-    }
-
-    func toggleMosaicMode() {
-        isAddingMosaic.toggle()
-        if !isAddingMosaic {
-            pendingMosaicRect = nil
-        }
-    }
-
-    func updateMosaicBlockSize(_ size: Int) {
-        let clampedSize = min(max(size, 2), 100)
-        guard mosaicBlockSize != clampedSize else { return }
-        mosaicBlockSize = clampedSize
-        invalidatePreview()
-    }
-
-    func commitMosaicBlockSizeChange(from oldValue: Int) {
-        guard oldValue != mosaicBlockSize else { return }
-        registerMosaicUndo(
-            state: MosaicState(regions: mosaicRegions, blockSize: oldValue, pendingRect: pendingMosaicRect),
-            actionName: strings.changeMosaicBlockSizeAction
-        )
-    }
-
-    func addMosaic(_ normalizedRect: CGRect) {
-        setPendingMosaic(normalizedRect)
-        applyPendingMosaic()
-    }
-
-    func setPendingMosaic(_ normalizedRect: CGRect) {
-        let rect = normalizedRect.standardized.intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
-        guard !rect.isNull, rect.width > 0.002, rect.height > 0.002 else { return }
-        pendingMosaicRect = rect
-    }
-
-    func applyPendingMosaic() {
-        guard let pendingMosaicRect else { return }
-        let oldState = MosaicState(regions: mosaicRegions, blockSize: mosaicBlockSize, pendingRect: pendingMosaicRect)
-        mosaicRegions.append(MosaicRegion(normalizedRect: pendingMosaicRect))
-        self.pendingMosaicRect = nil
-        invalidatePreview()
-        registerMosaicUndo(state: oldState, actionName: strings.addMosaicAction)
-    }
-
-    func editorPreviewImage(width: Int, height: Int) -> NSImage? {
-        guard width > 0, height > 0 else { return nil }
-        guard let image = try? PageRenderer.render(
-            imageURLs: slots.map { $0?.url },
-            transforms: slots.map { $0.map { transform(for: $0.id) } ?? .identity },
-            mosaics: mosaicRegions,
-            mosaicBlockSize: mosaicBlockSize,
-            layout: selectedLayout,
-            width: width,
-            height: height
-        ) else { return nil }
-        return NSImage(cgImage: image, size: NSSize(width: width, height: height))
     }
 
     func setLanguage(_ language: AppLanguage) {
@@ -358,8 +297,6 @@ final class ImageDeckViewModel: ObservableObject {
             let image = try PageRenderer.render(
                 imageURLs: slots.map { $0?.url },
                 transforms: slots.map { $0.map { transform(for: $0.id) } ?? .identity },
-                mosaics: mosaicRegions,
-                mosaicBlockSize: mosaicBlockSize,
                 layout: selectedLayout,
                 width: size.width,
                 height: size.height
@@ -386,8 +323,6 @@ final class ImageDeckViewModel: ObservableObject {
             image = try PageRenderer.render(
                 imageURLs: slots.map { $0?.url },
                 transforms: slots.map { $0.map { transform(for: $0.id) } ?? .identity },
-                mosaics: mosaicRegions,
-                mosaicBlockSize: mosaicBlockSize,
                 layout: selectedLayout,
                 width: size.width,
                 height: size.height
@@ -476,33 +411,6 @@ final class ImageDeckViewModel: ObservableObject {
             target.updateTransform(value, for: id)
             target.registerUndo(value: current, for: id, actionName: actionName)
             target.refreshUndoAvailability()
-        }
-        undoManager?.setActionName(actionName)
-        refreshUndoAvailability()
-    }
-
-    private struct MosaicState {
-        let regions: [MosaicRegion]
-        let blockSize: Int
-        let pendingRect: CGRect?
-    }
-
-    private func restoreMosaicState(_ state: MosaicState) {
-        mosaicRegions = state.regions
-        mosaicBlockSize = state.blockSize
-        pendingMosaicRect = state.pendingRect
-        invalidatePreview()
-    }
-
-    private func registerMosaicUndo(state: MosaicState, actionName: String) {
-        undoManager?.registerUndo(withTarget: self) { target in
-            let currentState = MosaicState(
-                regions: target.mosaicRegions,
-                blockSize: target.mosaicBlockSize,
-                pendingRect: target.pendingMosaicRect
-            )
-            target.restoreMosaicState(state)
-            target.registerMosaicUndo(state: currentState, actionName: actionName)
         }
         undoManager?.setActionName(actionName)
         refreshUndoAvailability()
