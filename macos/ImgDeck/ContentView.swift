@@ -266,7 +266,7 @@ private struct LayoutButton: View {
                     .frame(width: 32, height: 50)
                 Text(layout.label)
                     .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.accentColor.opacity(0.72))
             }
             .frame(maxWidth: .infinity, minHeight: 88)
             .contentShape(Rectangle())
@@ -304,9 +304,9 @@ private struct LayoutGlyph: View {
                         path.addLine(to: CGPoint(x: size.width, y: y))
                     }
                 }
-                .stroke(Color(nsColor: .secondaryLabelColor), lineWidth: 1)
+                .stroke(Color.black.opacity(0.55), lineWidth: 1)
             }
-            .overlay(Rectangle().stroke(Color(nsColor: .secondaryLabelColor), lineWidth: 1))
+            .overlay(Rectangle().stroke(Color.black.opacity(0.55), lineWidth: 1))
         }
     }
 }
@@ -585,7 +585,7 @@ private struct EditableImageCell: View {
             } else {
                 Text("\(index + 1)")
                     .font(.system(size: 88, weight: .bold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.accentColor.opacity(0.72))
             }
         }
         .frame(width: cellSize.width, height: cellSize.height)
