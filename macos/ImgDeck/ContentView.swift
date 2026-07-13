@@ -266,6 +266,7 @@ private struct LayoutButton: View {
                     .frame(width: 32, height: 50)
                 Text(layout.label)
                     .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(Color.accentColor)
             }
             .frame(maxWidth: .infinity, minHeight: 88)
             .contentShape(Rectangle())
@@ -584,7 +585,7 @@ private struct EditableImageCell: View {
             } else {
                 Text("\(index + 1)")
                     .font(.system(size: 88, weight: .bold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.accentColor)
             }
         }
         .frame(width: cellSize.width, height: cellSize.height)
